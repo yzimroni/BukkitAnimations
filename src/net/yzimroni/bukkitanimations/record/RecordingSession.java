@@ -25,6 +25,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.data.Animation;
+import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class RecordingSession {
 
@@ -47,14 +48,14 @@ public class RecordingSession {
 	private DataOutputStream outputStream;
 	private PacketListener packetListener;
 
-	private int tick;
+	private int tick = 1;
 
 	private Location minLocation;
 	private Location maxLocation;
 
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
 		this.animation = new Animation(name, uuid);
-		Preconditions.checkArgument(minLocation.getWorld().equals(maxLocation.getWorld()), "World must be same");
+		Preconditions.checkArgument(min.getWorld().equals(max.getWorld()), "World must be same");
 		this.minLocation = new Location(min.getWorld(), Math.min(min.getBlockX(), max.getBlockX()),
 				Math.min(min.getBlockY(), max.getBlockY()), Math.min(min.getBlockZ(), max.getBlockZ()));
 		this.maxLocation = new Location(min.getWorld(), Math.max(min.getBlockX(), max.getBlockX()),
@@ -102,6 +103,7 @@ public class RecordingSession {
 			try {
 				outputStream.writeInt(1); // Action = packet
 				outputStream.writeInt(tick);
+				Utils.writeVarInt(outputStream, packet.getType().getCurrentId());
 				byte[] data = getPacketData(packet);
 				outputStream.writeInt(data.length);
 				outputStream.write(data);
@@ -123,7 +125,7 @@ public class RecordingSession {
 		WirePacket wire = WirePacket.fromPacket(packet);
 
 		ByteBuf byteBuf = Unpooled.buffer();
-		wire.writeFully(byteBuf);
+		wire.writeBytes(byteBuf);
 		byteBuf.readerIndex(0);
 		byte[] array = new byte[byteBuf.readableBytes()];
 		byteBuf.readBytes(array);

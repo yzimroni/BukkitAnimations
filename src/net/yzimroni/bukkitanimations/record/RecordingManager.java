@@ -16,7 +16,7 @@ public class RecordingManager implements Listener {
 
 	private List<RecordingSession> recordings = new ArrayList<RecordingSession>();
 
-	public RecordingManager(BukkitAnimationsPlugin plugin) {
+	public RecordingManager() {
 		instance = this;
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(BukkitAnimationsPlugin.get(),
 				() -> recordings.forEach(RecordingSession::tick), 1, 1);
