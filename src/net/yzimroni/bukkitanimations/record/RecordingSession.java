@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
 import com.google.common.base.Preconditions;
@@ -18,6 +19,7 @@ import com.google.gson.Gson;
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.data.Animation;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
+import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class RecordingSession {
@@ -33,6 +35,7 @@ public class RecordingSession {
 	private EventRecorder eventRecorder;
 
 	private List<ActionData> actions = new ArrayList<ActionData>();
+	private List<Integer> trackedEntities = new ArrayList<Integer>();
 
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
 		this.animation = new Animation(name, uuid);
@@ -51,7 +54,21 @@ public class RecordingSession {
 		running = true;
 		eventRecorder = new EventRecorder(this);
 		Bukkit.getPluginManager().registerEvents(eventRecorder, BukkitAnimationsPlugin.get());
+		onStart();
 		RecordingManager.get().onStart(this);
+	}
+
+	private void onStart() {
+		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation())).forEach(e -> {
+			if (e instanceof Player) {
+				Player p = (Player) e;
+
+				ActionData action = new ActionData(ActionType.SPAWN_PLAYER).spawnEntity(p);
+				trackedEntities.add(p.getEntityId());
+				addAction(action);
+			}
+
+		});
 	}
 
 	public boolean isInside(Location location) {
@@ -71,6 +88,19 @@ public class RecordingSession {
 			return;
 		}
 		tick++;
+	}
+
+	public boolean isEntityTracked(int id) {
+		return trackedEntities.contains(id);
+	}
+
+	public void addTrackedEntity(int id) {
+		trackedEntities.add(id);
+	}
+
+	public void removeTrackedEntity(int id) {
+		// If called without "new Integer", it will call List#remove(int index)
+		trackedEntities.remove(new Integer(id));
 	}
 
 	public void stop() {

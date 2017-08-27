@@ -17,6 +17,7 @@ public class ReplayingSession {
 
 	private boolean running;
 	private int tick = 1;
+	private EntityTracker entityTracker = new EntityTracker(this);
 
 	private List<ActionData> actions = new ArrayList<ActionData>();
 	int index = 0;
@@ -76,6 +77,7 @@ public class ReplayingSession {
 			return;
 		}
 		running = false;
+		entityTracker.onEnd();
 		PlayingManager.get().onStop(this);
 	}
 
@@ -85,6 +87,10 @@ public class ReplayingSession {
 
 	public void setRunning(boolean running) {
 		this.running = running;
+	}
+
+	public EntityTracker getEntityTracker() {
+		return entityTracker;
 	}
 
 }

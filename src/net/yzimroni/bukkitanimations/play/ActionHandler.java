@@ -9,9 +9,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 
+import net.citizensnpcs.api.npc.NPC;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
+import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class ActionHandler {
 
@@ -46,8 +51,42 @@ public class ActionHandler {
 			Location l = a.getLocation(s);
 			l.getWorld().strikeLightningEffect(l);
 		});
+
+		register(ActionType.SPAWN_PLAYER, (s, a) -> {
+			Location location = a.getLocation(s);
+			String name = (String) a.getData("name");
+			int entityId = ((Number) a.getData("entityId")).intValue();
+			NPC npc = Utils.NPCREGISTRY.createNPC(EntityType.PLAYER, name);
+			npc.spawn(location);
+			Entity e = npc.getEntity();
+
+			e.setFireTicks(((Number) a.getData("fireTicks")).intValue());
+			if (e instanceof LivingEntity) {
+				LivingEntity l = (LivingEntity) e;
+				// TODO potion effects and armor
+			}
+			s.getEntityTracker().addOldToNewId(entityId, e.getEntityId());
+			s.getEntityTracker().addNPC(npc);
+		});
+
+		register(ActionType.ENTITY_MOVE, (s, a) -> {
+			int entityId = ((Number) a.getData("entityId")).intValue();
+			Location location = a.getLocation(s);
+			s.getEntityTracker().getEntityForOldId(entityId).teleport(location);
+		});
+		register(ActionType.DESPAWN_ENTITY, (s, a) -> {
+			int entityId = ((Number) a.getData("entityId")).intValue();
+			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
+			NPC npc = s.getEntityTracker().getNPC(e.getEntityId());
+			e.remove();
+			if (npc != null) {
+				npc.despawn();
+			}
+			s.getEntityTracker().removeEntity(e.getEntityId());
+			s.getEntityTracker().removeOldToNewId(entityId);
+		});
 	}
-	
+
 	public static void register(ActionType type, BiConsumer<ReplayingSession, ActionData> handler) {
 		if (HANDLERS.containsKey(type)) {
 			HANDLERS.remove(type);

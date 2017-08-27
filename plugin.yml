@@ -2,7 +2,7 @@ name: BukkitAnimations
 main: net.yzimroni.bukkitanimations.BukkitAnimationsPlugin
 version: 0.1
 description: BukkitAnimations Plugin
-depend: [ProtocolLib]
+depend: [ProtocolLib, Citizens]
 authors: [yzimroni]
 commands:
   bukkitanimations:

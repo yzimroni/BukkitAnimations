@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
@@ -35,7 +37,12 @@ public class ActionData {
 
 	public void setData(String key, Object value) {
 		if (value instanceof Location) {
-			value = ((Location) value).toVector();
+			Location l = ((Location) value);
+			if (l.getPitch() != 0 || l.getYaw() != 0) {
+				value = l.serialize();
+			} else {
+				value = ((Location) value).toVector();
+			}
 		}
 		data.put(key, value);
 	}
@@ -44,10 +51,30 @@ public class ActionData {
 		setData(key, value);
 		return this;
 	}
-	
+
 	public Location getLocation(ReplayingSession session) {
-		//TODO relative location
-		return Vector.deserialize((Map<String, Object>) getData("location")).toLocation(Bukkit.getWorlds().get(0));
+		// TODO relative location
+		@SuppressWarnings("unchecked")
+		Map<String, Object> loc = (Map<String, Object>) getData("location");
+		if (loc.containsKey("yaw") && loc.containsKey("pitch")) {
+			loc.put("world", Bukkit.getWorlds().get(0).getName());
+			return Location.deserialize(loc);
+		}
+
+		return Vector.deserialize(loc).toLocation(Bukkit.getWorlds().get(0));
+	}
+
+	public ActionData spawnEntity(Entity e) {
+		data("location", e.getLocation()).data("entityId", e.getEntityId()).data("uuid", e.getUniqueId())
+				.data("name", e.getName()).data("customName", e.getCustomName()).data("fireTicks", e.getFireTicks())
+				.data("type", e.getType());
+		if (e instanceof LivingEntity) {
+			LivingEntity l = (LivingEntity) e;
+			// data("potions", l.getActivePotionEffects());
+			// data("armor", l.getEquipment().getArmorContents());
+
+		}
+		return this;
 	}
 
 	public ActionType getType() {

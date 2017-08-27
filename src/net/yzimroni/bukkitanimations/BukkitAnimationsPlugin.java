@@ -7,6 +7,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 
 import net.yzimroni.bukkitanimations.play.PlayingManager;
 import net.yzimroni.bukkitanimations.record.RecordingManager;
+import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class BukkitAnimationsPlugin extends JavaPlugin {
 
@@ -30,6 +31,7 @@ public class BukkitAnimationsPlugin extends JavaPlugin {
 	public void onDisable() {
 		recordingManager.disable();
 		ProtocolLibrary.getProtocolManager().removePacketListeners(this);
+		Utils.NPCREGISTRY.deregisterAll();
 	}
 
 }
