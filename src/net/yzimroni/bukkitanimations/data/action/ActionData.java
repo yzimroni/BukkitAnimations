@@ -1,8 +1,13 @@
 package net.yzimroni.bukkitanimations.data.action;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
+
+import net.yzimroni.bukkitanimations.play.ReplayingSession;
 
 public class ActionData {
 
@@ -20,6 +25,10 @@ public class ActionData {
 		this(type, -1);
 	}
 
+	protected ActionData() {
+		// Gson
+	}
+
 	public Object getData(String key) {
 		return data.get(key);
 	}
@@ -34,6 +43,11 @@ public class ActionData {
 	public ActionData data(String key, Object value) {
 		setData(key, value);
 		return this;
+	}
+	
+	public Location getLocation(ReplayingSession session) {
+		//TODO relative location
+		return Vector.deserialize((Map<String, Object>) getData("location")).toLocation(Bukkit.getWorlds().get(0));
 	}
 
 	public ActionType getType() {
