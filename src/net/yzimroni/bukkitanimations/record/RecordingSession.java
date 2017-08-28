@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.HandlerList;
 
 import com.google.common.base.Preconditions;
@@ -35,7 +37,7 @@ public class RecordingSession {
 	private EventRecorder eventRecorder;
 
 	private List<ActionData> actions = new ArrayList<ActionData>();
-	private List<Integer> trackedEntities = new ArrayList<Integer>();
+	private HashMap<Entity, Location> trackedEntities = new HashMap<Entity, Location>();
 
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
 		this.animation = new Animation(name, uuid);
@@ -60,13 +62,9 @@ public class RecordingSession {
 
 	private void onStart() {
 		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation())).forEach(e -> {
-			if (e instanceof Player) {
-				Player p = (Player) e;
-
-				ActionData action = new ActionData(ActionType.SPAWN_PLAYER).spawnEntity(p);
-				trackedEntities.add(p.getEntityId());
-				addAction(action);
-			}
+			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
+			trackedEntities.put(e, e.getLocation());
+			addAction(action);
 
 		});
 	}
@@ -87,20 +85,44 @@ public class RecordingSession {
 		if (!isRunning()) {
 			return;
 		}
+		checkEntityMove();
 		tick++;
 	}
 
-	public boolean isEntityTracked(int id) {
-		return trackedEntities.contains(id);
+	private void checkEntityMove() {
+		// TODO Check when entities walk into the recording area
+		List<Entity> toRemove = new ArrayList<Entity>();
+		trackedEntities.entrySet().stream().filter(e -> e.getKey().isValid())
+				.filter(e -> e.getKey().getType() != EntityType.PLAYER).forEach(e -> {
+					Location location = e.getKey().getLocation();
+					// System.out.println(location.getYaw() + " " + location.getPitch());
+					if (!location.equals(e.getValue())) {
+						if (isInside(location)) {
+							ActionData action = new ActionData(ActionType.ENTITY_MOVE)
+									.data("entityId", e.getKey().getEntityId()).data("location", location);
+							addAction(action);
+							e.setValue(location);
+						} else {
+							ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId",
+									e.getKey().getEntityId());
+							toRemove.add(e.getKey());
+							addAction(action);
+						}
+					}
+				});
+		toRemove.forEach(trackedEntities::remove);
 	}
 
-	public void addTrackedEntity(int id) {
-		trackedEntities.add(id);
+	public boolean isEntityTracked(Entity e) {
+		return trackedEntities.containsKey(e);
 	}
 
-	public void removeTrackedEntity(int id) {
-		// If called without "new Integer", it will call List#remove(int index)
-		trackedEntities.remove(new Integer(id));
+	public void addTrackedEntity(Entity e) {
+		trackedEntities.put(e, e.getLocation());
+	}
+
+	public void removeTrackedEntity(Entity e) {
+		trackedEntities.remove(e);
 	}
 
 	public void stop() {

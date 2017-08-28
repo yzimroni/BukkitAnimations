@@ -6,7 +6,10 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
@@ -43,6 +46,20 @@ public class ActionData {
 			} else {
 				value = ((Location) value).toVector();
 			}
+		} else if (value instanceof ItemStack) {
+			value = ((ItemStack) value).serialize();
+		} else if (value instanceof ItemStack[]) {
+			ItemStack[] list = (ItemStack[]) value;
+			Object[] serialized = new Object[list.length];
+			for (int i = 0; i < list.length; i++) {
+				ItemStack item = list[i];
+				if (item == null) {
+					serialized[i] = null;
+				} else {
+					serialized[i] = item.serialize();
+				}
+			}
+			value = serialized;
 		}
 		data.put(key, value);
 	}
@@ -64,15 +81,26 @@ public class ActionData {
 		return Vector.deserialize(loc).toLocation(Bukkit.getWorlds().get(0));
 	}
 
-	public ActionData spawnEntity(Entity e) {
+	public int getEntityId() {
+		return ((Number) getData("entityId")).intValue();
+	}
+
+	public ActionData entityData(Entity e) {
 		data("location", e.getLocation()).data("entityId", e.getEntityId()).data("uuid", e.getUniqueId())
 				.data("name", e.getName()).data("customName", e.getCustomName()).data("fireTicks", e.getFireTicks())
-				.data("type", e.getType());
+				.data("type", e.getType()).data("customNameVisble", e.isCustomNameVisible())
+				.data("velocity", e.getVelocity());
 		if (e instanceof LivingEntity) {
 			LivingEntity l = (LivingEntity) e;
 			// data("potions", l.getActivePotionEffects());
-			// data("armor", l.getEquipment().getArmorContents());
+			data("armor", l.getEquipment().getArmorContents());
+			if (e instanceof Player) {
+				data("flying", ((Player) e).isFlying());
+			}
 
+		}
+		if (e instanceof Item) {
+			data("item", ((Item) e).getItemStack());
 		}
 		return this;
 	}

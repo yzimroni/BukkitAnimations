@@ -6,9 +6,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.entity.ItemMergeEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
+import org.bukkit.inventory.ItemStack;
 
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
@@ -74,20 +83,20 @@ public class EventRecorder implements Listener {
 		boolean toInside = session.isInside(e.getTo());
 		boolean fromInside = session.isInside(e.getFrom());
 		if (toInside && !fromInside) {
-			if (!session.isEntityTracked(e.getPlayer().getEntityId())) {
-				ActionData action = new ActionData(ActionType.SPAWN_PLAYER).spawnEntity(e.getPlayer());
-				session.addTrackedEntity(e.getPlayer().getEntityId());
+			if (!session.isEntityTracked(e.getPlayer())) {
+				ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getPlayer());
+				session.addTrackedEntity(e.getPlayer());
 				session.addAction(action);
 			}
 		} else if (!toInside && fromInside) {
-			if (session.isEntityTracked(e.getPlayer().getEntityId())) {
+			if (session.isEntityTracked(e.getPlayer())) {
 				ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId",
 						e.getPlayer().getEntityId());
-				session.removeTrackedEntity(e.getPlayer().getEntityId());
+				session.removeTrackedEntity(e.getPlayer());
 				session.addAction(action);
 			}
 		} else if (toInside && fromInside) {
-			if (session.isEntityTracked(e.getPlayer().getEntityId())) {
+			if (session.isEntityTracked(e.getPlayer())) {
 				ActionData action = new ActionData(ActionType.ENTITY_MOVE).data("entityId", e.getPlayer().getEntityId())
 						.data("location", e.getPlayer().getLocation());
 				session.addAction(action);
@@ -95,4 +104,81 @@ public class EventRecorder implements Listener {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onCreatureSpawn(CreatureSpawnEvent e) {
+		if (session.isInside(e.getLocation())) {
+			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
+			session.addTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onEntityDamage(EntityDamageEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.ENTITY_DAMAGE).data("entityId", e.getEntity().getEntityId());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerAnimation(PlayerAnimationEvent e) {
+		if (session.isEntityTracked(e.getPlayer())) {
+			ActionData action = new ActionData(ActionType.PLAYER_ANIMATION)
+					.data("entityId", e.getPlayer().getEntityId()).data("type", e.getAnimationType());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onItemDropped(PlayerDropItemEvent e) {
+		if (session.isInside(e.getItemDrop().getLocation())) {
+			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getItemDrop());
+			session.addTrackedEntity(e.getItemDrop());
+			session.addAction(action);
+		}
+
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onItemMerge(ItemMergeEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
+			session.removeTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+		ItemStack clone = e.getTarget().getItemStack().clone();
+		clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
+		ActionData action = new ActionData(ActionType.UPDATE_ENTITY_ITEM).data("entityId", e.getTarget().getEntityId())
+				.data("item", clone);
+		session.addAction(action);
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onItemPickedUp(PlayerPickupItemEvent e) {
+		if (session.isEntityTracked(e.getItem())) {
+			ActionData action = new ActionData(ActionType.ENTITY_PICKUP).data("entityId", e.getItem().getEntityId())
+					.data("playerId", e.getPlayer().getEntityId());
+			session.removeTrackedEntity(e.getItem());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onEntityDeath(EntityDeathEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
+			session.removeTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onItemDespawn(ItemDespawnEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
+			session.removeTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
 }

@@ -28,7 +28,6 @@ public class EntityTracker {
 
 	public void addNPC(NPC npc) {
 		npcs.put(npc.getEntity().getEntityId(), npc);
-		addEntity(npc.getEntity());
 	}
 
 	public void addEntity(Entity entity) {
@@ -37,11 +36,11 @@ public class EntityTracker {
 
 	public Entity getEntityForOldId(int oldId) {
 		int id = getNewId(oldId);
-		if (entities.containsKey(id)) {
-			return entities.get(id);
-		}
 		if (npcs.containsKey(id)) {
 			return npcs.get(id).getEntity();
+		}
+		if (entities.containsKey(id)) {
+			return entities.get(id);
 		}
 		return null;
 	}
