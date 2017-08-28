@@ -1,7 +1,8 @@
 package net.yzimroni.bukkitanimations.record;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -59,9 +60,8 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockBreak(BlockPlaceEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
-			session.addAction(new ActionData(ActionType.BLOCK_PLACE).data("location", e.getBlock().getLocation())
-					.data("player", e.getPlayer().getEntityId()).data("type", e.getBlock().getType())
-					.data("data", e.getBlock().getData()));
+			session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(e.getBlock()).data("player",
+					e.getPlayer().getEntityId()));
 		}
 	}
 
@@ -70,9 +70,7 @@ public class EventRecorder implements Listener {
 		e.getReplacedBlockStates().forEach(b -> {
 			if (!b.getLocation().equals(e.getBlockPlaced().getLocation())) {
 				if (session.isInside(b.getLocation())) {
-					session.addAction(new ActionData(ActionType.BLOCK_PLACE).data("location", b.getLocation())
-							.data("player", e.getPlayer().getEntityId()).data("type", b.getBlock().getType())
-							.data("data", b.getBlock().getData()));
+					session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b));
 				}
 			}
 		});
@@ -83,10 +81,8 @@ public class EventRecorder implements Listener {
 	public void onStructureGrow(StructureGrowEvent e) {
 		e.getBlocks().forEach(b -> {
 			if (session.isInside(b.getLocation())) {
-				session.addAction(new ActionData(ActionType.BLOCK_PLACE).data("location", b.getLocation())
-						.data("type", b.getType()).data("data", b.getData().getData())); // TODO Use Multi Block Change
-																							// insted of block place
-																							// action for every block?
+				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b));
+				// TODO Use Multi Block Change insted of block place action for every block?
 			}
 		});
 	}
@@ -94,8 +90,8 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
-			session.addAction(new ActionData(ActionType.SIGN_UPDATE).data("location", e.getBlock().getLocation())
-					.data("lines", e.getLines()));
+			session.addAction(
+					new ActionData(ActionType.UPDATE_BLOCKSTATE).blockData(e.getBlock().getState(), Sign.class));
 		}
 	}
 
@@ -196,12 +192,7 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onProjectileLaunch(ProjectileLaunchEvent e) {
 		if (session.isInside(e.getEntity().getLocation())) {
-			int shooterId = -1;
-			if (e.getEntity().getShooter() instanceof Entity) {
-				shooterId = ((Entity) e.getEntity().getShooter()).getEntityId();
-			}
-			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity()).data("shooterId",
-					shooterId);
+			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
 			session.addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
@@ -216,8 +207,7 @@ public class EventRecorder implements Listener {
 		}
 		ItemStack clone = e.getTarget().getItemStack().clone();
 		clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
-		ActionData action = new ActionData(ActionType.UPDATE_ENTITY_ITEM).data("entityId", e.getTarget().getEntityId())
-				.data("item", clone);
+		ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getEntity(), Item.class);
 		session.addAction(action);
 	}
 

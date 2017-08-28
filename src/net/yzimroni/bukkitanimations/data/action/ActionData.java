@@ -3,19 +3,17 @@ package net.yzimroni.bukkitanimations.data.action;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
+import net.yzimroni.bukkitanimations.data.manager.MinecraftDataManagers;
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
 
 public class ActionData {
@@ -38,12 +36,16 @@ public class ActionData {
 		// Gson
 	}
 
-	public boolean hasData(String key) {
+	public boolean has(String key) {
 		return data.containsKey(key);
 	}
 
 	public Object getData(String key) {
 		return data.get(key);
+	}
+
+	public int getInt(String key) {
+		return ((Number) getData(key)).intValue();
 	}
 
 	public void setData(String key, Object value) {
@@ -108,25 +110,34 @@ public class ActionData {
 				.toArray(ItemStack[]::new);
 	}
 
-	public ActionData entityData(Entity e) {
-		data("location", e.getLocation()).data("entityId", e.getEntityId()).data("uuid", e.getUniqueId())
-				.data("name", e.getName()).data("customName", e.getCustomName()).data("fireTicks", e.getFireTicks())
-				.data("type", e.getType()).data("customNameVisble", e.isCustomNameVisible())
-				.data("velocity", e.getVelocity());
-		if (e instanceof LivingEntity) {
-			LivingEntity l = (LivingEntity) e;
-			data("potions",
-					l.getActivePotionEffects().stream().map(PotionEffect::serialize).collect(Collectors.toList()));
-			data("armor", l.getEquipment().getArmorContents());
-			data("itemInHand", l.getEquipment().getItemInHand());
-			if (e instanceof Player) {
-				data("flying", ((Player) e).isFlying());
-			}
+	public ActionData entityData(Entity e, Class<?> upTo) {
+		MinecraftDataManagers.getEntities().save(this, e, upTo);
+		return this;
+	}
 
-		}
-		if (e instanceof Item) {
-			data("item", ((Item) e).getItemStack());
-		}
+	public ActionData entityData(Entity e) {
+		MinecraftDataManagers.getEntities().save(this, e);
+		return this;
+	}
+
+	public ActionData blockData(Block b) {
+		MinecraftDataManagers.getBlocks().save(this, b);
+		MinecraftDataManagers.getBlocks().save(this, b.getState());
+		return this;
+	}
+
+	public ActionData blockData(Block b, Class<?> upTo) {
+		MinecraftDataManagers.getBlocks().save(this, b, upTo);
+		return this;
+	}
+
+	public ActionData blockData(BlockState b) {
+		MinecraftDataManagers.getBlocks().save(this, b);
+		return this;
+	}
+
+	public ActionData blockData(BlockState b, Class<?> upTo) {
+		MinecraftDataManagers.getBlocks().save(this, b, upTo);
 		return this;
 	}
 
