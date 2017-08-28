@@ -17,8 +17,11 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
 import net.citizensnpcs.api.npc.NPC;
@@ -78,8 +81,18 @@ public class ActionHandler {
 			e.setFireTicks(((Number) a.getData("fireTicks")).intValue());
 			if (e instanceof LivingEntity) {
 				LivingEntity l = (LivingEntity) e;
-				l.getEquipment().setArmorContents(((ArrayList<Map<String, Object>>) a.getData("armor")).stream()
-						.map(ItemStack::deserialize).toArray(ItemStack[]::new));
+				l.getEquipment().setArmorContents(a.getItemStackList("armor"));
+				l.getEquipment().setItemInHand(a.getItemStack("itemInHand"));
+				ArrayList<Map<String, Object>> potions = (ArrayList<Map<String, Object>>) a.getData("potions");
+				potions.forEach(m -> {
+					// Fixes Gson decode bug
+					m.put("effect", ((Number) m.get("effect")).intValue());
+					m.put("duration", ((Number) m.get("duration")).intValue());
+					m.put("amplifier", ((Number) m.get("amplifier")).intValue());
+				});
+				potions.stream().map(PotionEffect::new).forEach(potion -> {
+					potion.apply(l);
+				});
 				// TODO potion effects
 				if (e instanceof Player) {
 					Player p = (Player) e;
@@ -90,8 +103,14 @@ public class ActionHandler {
 				}
 			}
 			if (e instanceof Item) {
-				((Item) e).setItemStack(ItemStack.deserialize((Map<String, Object>) a.getData("item")));
+				((Item) e).setItemStack(a.getItemStack("item"));
 				((Item) e).setPickupDelay(-1);
+			}
+			if (e instanceof Projectile) {
+				Entity shooter = s.getEntityTracker().getEntityForOldId(((Number) a.getData("shooterId")).intValue());
+				if (shooter != null && shooter instanceof ProjectileSource) {
+					((Projectile) e).setShooter((ProjectileSource) shooter);
+				}
 			}
 			s.getEntityTracker().addOldToNewId(entityId, e.getEntityId());
 			s.getEntityTracker().addNPC(npc);
@@ -142,7 +161,25 @@ public class ActionHandler {
 				((Item) update).setItemStack(item);
 			}
 		});
+		register(ActionType.UPDATE_EQUIPMENT, (s, a) -> {
+			int entityId = a.getEntityId();
+			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
+			if (e instanceof LivingEntity) {
+				if (a.hasData("itemInHand")) {
+					((LivingEntity) e).getEquipment().setItemInHand(a.getItemStack("itemInHand"));
+				}
+				if (a.hasData("armor")) {
+					((LivingEntity) e).getEquipment().setArmorContents(a.getItemStackList("armor"));
+				}
+			}
+		});
 
+		register(ActionType.ENTITY_DEATH, (s, a) -> {
+			//TODO Play the full death animation
+			int entityId = a.getEntityId();
+			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
+			((Damageable) e).damage(Integer.MAX_VALUE);
+		});
 		register(ActionType.DESPAWN_ENTITY, (s, a) -> {
 			int entityId = ((Number) a.getData("entityId")).intValue();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);

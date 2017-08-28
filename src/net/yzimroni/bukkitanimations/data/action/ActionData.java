@@ -1,15 +1,19 @@
 package net.yzimroni.bukkitanimations.data.action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
@@ -32,6 +36,10 @@ public class ActionData {
 
 	protected ActionData() {
 		// Gson
+	}
+
+	public boolean hasData(String key) {
+		return data.containsKey(key);
 	}
 
 	public Object getData(String key) {
@@ -85,6 +93,21 @@ public class ActionData {
 		return ((Number) getData("entityId")).intValue();
 	}
 
+	@SuppressWarnings("unchecked")
+	public ItemStack getItemStack(String name) {
+		Map<String, Object> m = (Map<String, Object>) getData(name);
+		if (m == null || m.isEmpty()) {
+			return new ItemStack(Material.AIR);
+		}
+		return ItemStack.deserialize(m);
+	}
+
+	@SuppressWarnings("unchecked")
+	public ItemStack[] getItemStackList(String name) {
+		return ((ArrayList<Map<String, Object>>) getData(name)).stream().map(ItemStack::deserialize)
+				.toArray(ItemStack[]::new);
+	}
+
 	public ActionData entityData(Entity e) {
 		data("location", e.getLocation()).data("entityId", e.getEntityId()).data("uuid", e.getUniqueId())
 				.data("name", e.getName()).data("customName", e.getCustomName()).data("fireTicks", e.getFireTicks())
@@ -92,8 +115,10 @@ public class ActionData {
 				.data("velocity", e.getVelocity());
 		if (e instanceof LivingEntity) {
 			LivingEntity l = (LivingEntity) e;
-			// data("potions", l.getActivePotionEffects());
+			data("potions",
+					l.getActivePotionEffects().stream().map(PotionEffect::serialize).collect(Collectors.toList()));
 			data("armor", l.getEquipment().getArmorContents());
+			data("itemInHand", l.getEquipment().getItemInHand());
 			if (e instanceof Player) {
 				data("flying", ((Player) e).isFlying());
 			}
