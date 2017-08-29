@@ -20,6 +20,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
 import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.npc.skin.Skin;
 import net.citizensnpcs.util.NMS;
 import net.citizensnpcs.util.PlayerAnimation;
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
@@ -65,6 +66,15 @@ public class ActionHandler {
 
 			int entityId = a.getEntityId();
 
+			if (type == EntityType.PLAYER) {
+				Map<String, Object> textures = (Map<String, Object>) a.getData("textures");
+				if (textures != null && !textures.isEmpty()) {
+					npc.data().set(Skin.CACHED_SKIN_UUID_NAME_METADATA, npc.getName());
+					npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_METADATA, textures.get("value"));
+					npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_SIGN_METADATA, textures.get("signature"));
+					npc.data().set(NPC.PLAYER_SKIN_USE_LATEST, false);
+				}
+			}
 			npc.spawn(location);
 			MinecraftDataManagers.getEntities().load(a, npc.getEntity());
 			Entity e = npc.getEntity();

@@ -49,6 +49,7 @@ public class EventRecorder implements Listener {
 		this.session = session;
 	}
 
+	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {

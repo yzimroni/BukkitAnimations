@@ -27,7 +27,11 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+
 import net.yzimroni.bukkitanimations.data.action.ActionData;
+import net.yzimroni.bukkitanimations.utils.NMSUtils;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class MinecraftDataManagers {
@@ -119,6 +123,12 @@ public class MinecraftDataManagers {
 			@Override
 			public void save(ActionData action, Player p) {
 				action.data("flying", p.isFlying());
+
+				GameProfile profile = NMSUtils.getGameProfile(p);
+				Property textures = profile.getProperties().get("textures").stream().findAny().orElse(null);
+				if (textures != null) {
+					action.data("textures", textures);
+				}
 			}
 
 			@Override
