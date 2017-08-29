@@ -106,14 +106,14 @@ public class EventRecorder implements Listener {
 		if (session.isInside(target.getLocation())) {
 			Material type = null;
 			switch (e.getBucket()) {
-			case WATER_BUCKET:
-				type = Material.WATER;
-				break;
-			case LAVA_BUCKET:
-				type = Material.LAVA;
-				break;
-			default:
-				break;
+				case WATER_BUCKET:
+					type = Material.WATER;
+					break;
+				case LAVA_BUCKET:
+					type = Material.LAVA;
+					break;
+				default:
+					break;
 			}
 			if (type != null) {
 				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", type));
