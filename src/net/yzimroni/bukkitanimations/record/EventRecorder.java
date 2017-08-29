@@ -3,6 +3,7 @@ package net.yzimroni.bukkitanimations.record;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -18,6 +19,7 @@ import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -26,6 +28,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Colorable;
 
 import com.google.common.base.Objects;
 
@@ -56,7 +59,6 @@ public class EventRecorder implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockBreak(BlockPlaceEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
@@ -76,7 +78,6 @@ public class EventRecorder implements Listener {
 		});
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onStructureGrow(StructureGrowEvent e) {
 		e.getBlocks().forEach(b -> {
@@ -134,6 +135,14 @@ public class EventRecorder implements Listener {
 		if (session.isInside(e.getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
 			session.addTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onSheepDyeWool(SheepDyeWoolEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getEntity(), Colorable.class);
 			session.addAction(action);
 		}
 	}
@@ -207,7 +216,7 @@ public class EventRecorder implements Listener {
 		}
 		ItemStack clone = e.getTarget().getItemStack().clone();
 		clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
-		ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getEntity(), Item.class);
+		ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getTarget(), Item.class);
 		session.addAction(action);
 	}
 

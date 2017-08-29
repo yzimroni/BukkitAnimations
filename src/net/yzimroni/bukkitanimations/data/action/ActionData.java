@@ -110,8 +110,8 @@ public class ActionData {
 				.toArray(ItemStack[]::new);
 	}
 
-	public ActionData entityData(Entity e, Class<?> upTo) {
-		MinecraftDataManagers.getEntities().save(this, e, upTo);
+	public ActionData entityData(Entity e, Class<?>... classes) {
+		MinecraftDataManagers.getEntities().save(this, e, classes);
 		return this;
 	}
 
@@ -126,8 +126,8 @@ public class ActionData {
 		return this;
 	}
 
-	public ActionData blockData(Block b, Class<?> upTo) {
-		MinecraftDataManagers.getBlocks().save(this, b, upTo);
+	public ActionData blockData(Block b, Class<?>... classes) {
+		MinecraftDataManagers.getBlocks().save(this, b, classes);
 		return this;
 	}
 
@@ -136,8 +136,8 @@ public class ActionData {
 		return this;
 	}
 
-	public ActionData blockData(BlockState b, Class<?> upTo) {
-		MinecraftDataManagers.getBlocks().save(this, b, upTo);
+	public ActionData blockData(BlockState b, Class<?>... classes) {
+		MinecraftDataManagers.getBlocks().save(this, b, classes);
 		return this;
 	}
 

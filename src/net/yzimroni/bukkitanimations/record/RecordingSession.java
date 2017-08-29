@@ -65,7 +65,6 @@ public class RecordingSession {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
 			trackedEntities.put(e, e.getLocation());
 			addAction(action);
-
 		});
 	}
 

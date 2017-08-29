@@ -16,6 +16,7 @@ Map (map item)
 Entity velocity (is it needed?)
 Entity passengers
 Leash
+Vehicles (minecart, boats)
 
 
 Offset location to replays

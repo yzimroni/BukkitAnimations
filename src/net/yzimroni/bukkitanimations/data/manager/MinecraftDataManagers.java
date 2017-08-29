@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Creeper;
@@ -38,6 +40,21 @@ public class MinecraftDataManagers {
 	}
 
 	private static void createEntities() {
+		ENTITIES.setGlobalDataHandler(new DataHandler<Entity>() {
+
+			@Override
+			public void save(ActionData action, Entity object) {
+				if (!action.has("entityId")) {
+					action.data("entityId", object.getEntityId());
+				}
+			}
+
+			@Override
+			public void load(ActionData action, Entity object) {
+
+			}
+
+		});
 		ENTITIES.register(Entity.class, new DataHandler<Entity>() {
 
 			@Override
@@ -105,12 +122,14 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData a, Player p) {
-				boolean flying = (boolean) a.getData("flying");
-				if (Utils.NPCREGISTRY.isNPC(p)) {
-					Utils.NPCREGISTRY.getNPC(p).setFlyable(flying);
+				if (a.has("flying")) {
+					boolean flying = (boolean) a.getData("flying");
+					if (Utils.NPCREGISTRY.isNPC(p)) {
+						Utils.NPCREGISTRY.getNPC(p).setFlyable(flying);
+					}
+					p.setAllowFlight(flying);
+					p.setFlying(flying);
 				}
-				p.setAllowFlight(flying);
-				p.setFlying(flying);
 			}
 		});
 		ENTITIES.register(Item.class, new DataHandler<Item>() {
@@ -167,7 +186,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Creeper object) {
-				object.setPowered((boolean) action.getData("powered"));
+				if (action.has("powered")) {
+					object.setPowered((boolean) action.getData("powered"));
+				}
 			}
 		});
 		ENTITIES.register(Enderman.class, new DataHandler<Enderman>() {
@@ -179,7 +200,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Enderman object) {
-				object.setCarriedMaterial((MaterialData) action.getData("carriedMaterial"));
+				if (action.has("carriedMaterial")) {
+					object.setCarriedMaterial((MaterialData) action.getData("carriedMaterial"));
+				}
 			}
 
 		});
@@ -206,8 +229,11 @@ public class MinecraftDataManagers {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void load(ActionData action, Fireball object) {
-				object.setDirection(Vector.deserialize((Map<String, Object>) action.getData("direction")));
+				if (action.has("direction")) {
+					object.setDirection(Vector.deserialize((Map<String, Object>) action.getData("direction")));
+				}
 			}
+
 		});
 		ENTITIES.register(Projectile.class, new DataHandler<Projectile>() {
 
@@ -222,7 +248,6 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Projectile object) {
-				// TODO Auto-generated method stub
 
 			}
 		});
@@ -233,6 +258,26 @@ public class MinecraftDataManagers {
 	}
 
 	private static void createBlocks() {
+		BLOCKS.setGlobalDataHandler(new DataHandler<Object>() {
+
+			@Override
+			public void save(ActionData action, Object object) {
+				Location location = null;
+				if (object instanceof Block) {
+					location = ((Block) object).getLocation();
+				} else if (object instanceof BlockState) {
+					location = ((BlockState) object).getLocation();
+				}
+				if (!action.has("location")) {
+					action.data("location", location);
+				}
+			}
+
+			@Override
+			public void load(ActionData action, Object object) {
+
+			}
+		});
 		BLOCKS.register(Block.class, new DataHandler<Block>() {
 
 			@SuppressWarnings("deprecation")
@@ -258,6 +303,7 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Sign sign) {
+				@SuppressWarnings("unchecked")
 				String[] lines = (String[]) ((List<String>) action.getData("lines")).toArray(new String[0]);
 				for (int i = 0; i < lines.length; i++) {
 					sign.setLine(i, lines[i]);
