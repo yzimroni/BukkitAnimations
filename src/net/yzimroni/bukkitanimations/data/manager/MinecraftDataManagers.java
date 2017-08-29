@@ -22,6 +22,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.material.Colorable;
+import org.bukkit.material.FlowerPot;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
@@ -297,8 +298,7 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void save(ActionData action, Sign object) {
-				// TODO Auto-generated method stub
-
+				action.setData("lines", object.getLines());
 			}
 
 			@Override
@@ -307,6 +307,20 @@ public class MinecraftDataManagers {
 				String[] lines = (String[]) ((List<String>) action.getData("lines")).toArray(new String[0]);
 				for (int i = 0; i < lines.length; i++) {
 					sign.setLine(i, lines[i]);
+				}
+			}
+		});
+		BLOCKS.register(FlowerPot.class, new DataHandler<FlowerPot>() {
+
+			@Override
+			public void save(ActionData action, FlowerPot object) {
+				action.data("contens", object.getContents());
+			}
+
+			@Override
+			public void load(ActionData action, FlowerPot object) {
+				if (action.has("contens")) {
+					object.setContents((MaterialData) action.getData("contens"));
 				}
 			}
 		});

@@ -1,9 +1,9 @@
 package net.yzimroni.bukkitanimations.record;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,6 +11,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -21,6 +22,8 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -91,8 +94,51 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
+			// TODO make it save the new lines
 			session.addAction(
 					new ActionData(ActionType.UPDATE_BLOCKSTATE).blockData(e.getBlock().getState(), Sign.class));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerBucketEmpty(PlayerBucketEmptyEvent e) {
+		Block target = e.getBlockClicked().getRelative(e.getBlockFace());
+		if (session.isInside(target.getLocation())) {
+			Material type = null;
+			switch (e.getBucket()) {
+			case WATER_BUCKET:
+				type = Material.WATER;
+				break;
+			case LAVA_BUCKET:
+				type = Material.LAVA;
+				break;
+			default:
+				break;
+			}
+			if (type != null) {
+				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", type));
+				session.addAction(new ActionData(ActionType.UPDATE_EQUIPMENT)
+						.data("entityId", e.getPlayer().getEntityId()).data("itemInHand", e.getItemStack()));
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerBucketFill(PlayerBucketFillEvent e) {
+		Block target = e.getBlockClicked().getRelative(e.getBlockFace());
+		if (session.isInside(target.getLocation())) {
+			session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", Material.AIR));
+			session.addAction(new ActionData(ActionType.UPDATE_EQUIPMENT).data("entityId", e.getPlayer().getEntityId())
+					.data("itemInHand", e.getItemStack()));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onBlockSpread(BlockSpreadEvent e) {
+		if (session.isInside(e.getBlock().getLocation())) {
+			System.out.println(e.getNewState());
+			session.addAction(
+					new ActionData(ActionType.BLOCK_PLACE).blockData(e.getBlock()).blockStateType(e.getNewState()));
 		}
 	}
 
@@ -201,7 +247,7 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onProjectileLaunch(ProjectileLaunchEvent e) {
 		if (session.isInside(e.getEntity().getLocation())) {
-			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
+			ActionData action = new ActionData(ActionType.SHOOT_PROJECTILE).entityData(e.getEntity());
 			session.addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}

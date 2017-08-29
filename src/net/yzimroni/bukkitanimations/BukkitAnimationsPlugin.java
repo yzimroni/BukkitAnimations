@@ -21,6 +21,7 @@ public class BukkitAnimationsPlugin extends JavaPlugin {
 		recordingManager = new RecordingManager();
 		playingManager = new PlayingManager();
 		Bukkit.getPluginManager().registerEvents(recordingManager, this);
+		Bukkit.getPluginManager().registerEvents(playingManager, this);
 		getCommand("bukkitanimations").setExecutor(new Commands());
 	}
 

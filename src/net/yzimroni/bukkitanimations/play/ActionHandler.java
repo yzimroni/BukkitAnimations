@@ -1,6 +1,7 @@
 package net.yzimroni.bukkitanimations.play;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.Vector;
 
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.util.NMS;
@@ -32,6 +34,7 @@ public class ActionHandler {
 		registerDefaultHandlers();
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void registerDefaultHandlers() {
 		register(ActionType.BLOCK_BREAK, (s, a) -> {
 			a.getLocation(s).getBlock().setType(Material.AIR);
@@ -63,14 +66,32 @@ public class ActionHandler {
 			MinecraftDataManagers.getEntities().load(a, npc.getEntity());
 			Entity e = npc.getEntity();
 
-			if (e instanceof Projectile) {
-				Entity shooter = s.getEntityTracker().getEntityForOldId(a.getInt("shooterId"));
-				if (shooter != null && shooter instanceof ProjectileSource) {
-					((Projectile) e).setShooter((ProjectileSource) shooter);
-				}
-			}
 			s.getEntityTracker().addOldToNewId(entityId, e.getEntityId());
 			s.getEntityTracker().addNPC(npc);
+		});
+
+		register(ActionType.SHOOT_PROJECTILE, (s, a) -> {
+			int entityId = a.getEntityId();
+			int shooterId = a.getInt("shooterId");
+			Entity shooter = s.getEntityTracker().getEntityForOldId(shooterId);
+			EntityType type = EntityType.valueOf((String) a.getData("type"));
+			Vector velocity = Vector.deserialize((Map<String, Object>) a.getData("velocity"));
+
+			Projectile projectile = null;
+			if (shooter != null && shooter instanceof ProjectileSource) {
+				projectile = ((ProjectileSource) shooter)
+						.launchProjectile((Class<? extends Projectile>) type.getEntityClass(), velocity);
+			} else {
+				Location location = a.getLocation(s);
+				if (type == EntityType.ARROW) {
+					projectile = location.getWorld().spawnArrow(location, velocity, (float) 0.6, 12);
+				} else {
+					projectile = (Projectile) location.getWorld().spawnEntity(location, type);
+				}
+			}
+			MinecraftDataManagers.getEntities().load(a, projectile);
+			s.getEntityTracker().addOldToNewId(entityId, projectile.getEntityId());
+			s.getEntityTracker().addEntity(projectile);
 		});
 
 		register(ActionType.ENTITY_MOVE, (s, a) -> {

@@ -141,6 +141,12 @@ public class ActionData {
 		return this;
 	}
 
+	@SuppressWarnings("deprecation")
+	public ActionData blockStateType(BlockState newState) {
+		data("type", newState.getType()).data("data", newState.getData().getData());
+		return this;
+	}
+
 	public ActionType getType() {
 		return type;
 	}

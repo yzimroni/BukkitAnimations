@@ -3,8 +3,10 @@ package net.yzimroni.bukkitanimations.play;
 import java.util.HashMap;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import net.citizensnpcs.api.npc.NPC;
+import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class EntityTracker {
@@ -31,6 +33,7 @@ public class EntityTracker {
 	}
 
 	public void addEntity(Entity entity) {
+		entity.setMetadata("animationEntity", new FixedMetadataValue(BukkitAnimationsPlugin.get(), true));
 		entities.put(entity.getEntityId(), entity);
 	}
 
@@ -46,7 +49,10 @@ public class EntityTracker {
 	}
 
 	public int getNewId(int old) {
-		return oldToNewId.get(old);
+		if (oldToNewId.containsKey(old)) {
+			return oldToNewId.get(old);
+		}
+		return -1;
 	}
 
 	public NPC getNPC(int id) {
