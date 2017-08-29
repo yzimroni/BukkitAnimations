@@ -5,10 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import org.bukkit.Bukkit;
+import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -20,6 +21,7 @@ import org.bukkit.util.Vector;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.util.NMS;
 import net.citizensnpcs.util.PlayerAnimation;
+import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.data.manager.MinecraftDataManagers;
@@ -106,11 +108,7 @@ public class ActionHandler {
 		register(ActionType.ENTITY_DAMAGE, (s, a) -> {
 			int entityId = a.getEntityId();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
-			if (e instanceof Damageable) {
-				((Damageable) e).damage(0);
-			} else {
-				throw new IllegalStateException("Cannot damage entity " + entityId + ", entity not damageable");
-			}
+			e.playEffect(EntityEffect.HURT);
 		});
 
 		register(ActionType.PLAYER_ANIMATION, (s, a) -> {
@@ -143,14 +141,19 @@ public class ActionHandler {
 		});
 
 		register(ActionType.ENTITY_DEATH, (s, a) -> {
-			// TODO Play the full death animation
 			int entityId = a.getEntityId();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
-			((Damageable) e).damage(Integer.MAX_VALUE);
+			e.playEffect(EntityEffect.DEATH);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(BukkitAnimationsPlugin.get(),
+					() -> handle(s, new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", entityId)), 20);
 		});
 		register(ActionType.DESPAWN_ENTITY, (s, a) -> {
 			int entityId = ((Number) a.getData("entityId")).intValue();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
+			if (e == null) {
+				System.out.println("null, returning");
+				return;
+			}
 			NPC npc = s.getEntityTracker().getNPC(e.getEntityId());
 			e.remove();
 			if (npc != null) {
