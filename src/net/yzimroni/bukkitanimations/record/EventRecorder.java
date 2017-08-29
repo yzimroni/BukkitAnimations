@@ -75,7 +75,7 @@ public class EventRecorder implements Listener {
 		e.getReplacedBlockStates().forEach(b -> {
 			if (!b.getLocation().equals(e.getBlockPlaced().getLocation())) {
 				if (session.isInside(b.getLocation())) {
-					session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b));
+					session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b.getBlock()).blockStateType(b));
 				}
 			}
 		});
@@ -85,7 +85,7 @@ public class EventRecorder implements Listener {
 	public void onStructureGrow(StructureGrowEvent e) {
 		e.getBlocks().forEach(b -> {
 			if (session.isInside(b.getLocation())) {
-				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b));
+				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b.getBlock()).blockStateType(b));
 				// TODO Use Multi Block Change insted of block place action for every block?
 			}
 		});
