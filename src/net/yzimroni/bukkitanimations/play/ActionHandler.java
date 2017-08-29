@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -151,7 +152,6 @@ public class ActionHandler {
 			int entityId = ((Number) a.getData("entityId")).intValue();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
 			if (e == null) {
-				System.out.println("null, returning");
 				return;
 			}
 			NPC npc = s.getEntityTracker().getNPC(e.getEntityId());
@@ -161,6 +161,13 @@ public class ActionHandler {
 			}
 			s.getEntityTracker().removeEntity(e.getEntityId());
 			s.getEntityTracker().removeOldToNewId(entityId);
+		});
+
+		register(ActionType.WORLD_EFFECT, (s, a) -> {
+			Effect effect = Effect.valueOf((String) a.getData("effect"));
+			Location location = a.getLocation(s);
+			int data = a.getInt("data");
+			location.getWorld().playEffect(location, effect, data);
 		});
 	}
 

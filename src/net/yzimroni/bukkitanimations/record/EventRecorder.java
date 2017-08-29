@@ -1,5 +1,6 @@
 package net.yzimroni.bukkitanimations.record;
 
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -28,6 +29,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
@@ -52,6 +54,11 @@ public class EventRecorder implements Listener {
 		if (session.isInside(e.getBlock().getLocation())) {
 			session.addAction(new ActionData(ActionType.BLOCK_BREAK).data("location", e.getBlock().getLocation())
 					.data("player", e.getPlayer().getEntityId()));
+			if (e.getPlayer().getUniqueId().equals(session.getAnimation().getPlayer())) {
+				session.addAction(new ActionData(ActionType.WORLD_EFFECT).data("effect", Effect.STEP_SOUND)
+						.data("location", e.getBlock().getLocation()).data("data", e.getBlock().getType().getId())
+						.data("disableRel", false));
+			}
 		}
 	}
 
@@ -152,28 +159,12 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerMove(PlayerMoveEvent e) {
-		boolean toInside = session.isInside(e.getTo());
-		boolean fromInside = session.isInside(e.getFrom());
-		if (toInside && !fromInside) {
-			if (!session.isEntityTracked(e.getPlayer())) {
-				ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getPlayer());
-				session.addTrackedEntity(e.getPlayer());
-				session.addAction(action);
-			}
-		} else if (!toInside && fromInside) {
-			if (session.isEntityTracked(e.getPlayer())) {
-				ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId",
-						e.getPlayer().getEntityId());
-				session.removeTrackedEntity(e.getPlayer());
-				session.addAction(action);
-			}
-		} else if (toInside && fromInside) {
-			if (session.isEntityTracked(e.getPlayer())) {
-				ActionData action = new ActionData(ActionType.ENTITY_MOVE).data("entityId", e.getPlayer().getEntityId())
-						.data("location", e.getPlayer().getLocation());
-				session.addAction(action);
-			}
-		}
+		session.handleEntityMove(e.getPlayer(), e.getFrom(), e.getTo());
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerTeleport(PlayerTeleportEvent e) {
+		session.handleEntityMove(e.getPlayer(), e.getFrom(), e.getTo());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

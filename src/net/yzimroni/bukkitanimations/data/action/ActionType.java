@@ -9,5 +9,8 @@ public enum ActionType {
 	ENTITY_DAMAGE, ENTITY_DEATH, DESPAWN_ENTITY,
 
 	// Players
-	PLAYER_ANIMATION;
+	PLAYER_ANIMATION,
+
+	// World
+	WORLD_EFFECT;
 }
