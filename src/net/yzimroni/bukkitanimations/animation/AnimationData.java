@@ -1,13 +1,13 @@
-package net.yzimroni.bukkitanimations.data;
+package net.yzimroni.bukkitanimations.animation;
 
 import java.util.UUID;
 
-public class Animation {
+public class AnimationData {
 
 	private String name;
 	private UUID player;
 
-	public Animation(String name, UUID player) {
+	public AnimationData(String name, UUID player) {
 		super();
 		this.name = name;
 		this.player = player;

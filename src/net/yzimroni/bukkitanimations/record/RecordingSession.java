@@ -1,6 +1,5 @@
 package net.yzimroni.bukkitanimations.record;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -19,14 +18,15 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
-import net.yzimroni.bukkitanimations.data.Animation;
+import net.yzimroni.bukkitanimations.animation.AnimationData;
+import net.yzimroni.bukkitanimations.animation.AnimationManager;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
 public class RecordingSession {
 
-	private Animation animation;
+	private AnimationData animation;
 	private boolean running;
 
 	private int tick = 1;
@@ -40,7 +40,7 @@ public class RecordingSession {
 	private HashMap<Entity, Location> trackedEntities = new HashMap<Entity, Location>();
 
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
-		this.animation = new Animation(name, uuid);
+		this.animation = new AnimationData(name, uuid);
 		Preconditions.checkArgument(min.getWorld().equals(max.getWorld()), "World must be same");
 		this.minLocation = new Location(min.getWorld(), Math.min(min.getBlockX(), max.getBlockX()),
 				Math.min(min.getBlockY(), max.getBlockY()), Math.min(min.getBlockZ(), max.getBlockZ()));
@@ -136,7 +136,7 @@ public class RecordingSession {
 		RecordingManager.get().onStop(this);
 
 		try {
-			Files.write(new Gson().toJson(actions), new File(animation.getName() + ".mcanimation"),
+			Files.write(new Gson().toJson(actions), AnimationManager.get().createAnimationFile(animation.getName()),
 					Charset.defaultCharset());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -147,7 +147,7 @@ public class RecordingSession {
 		return running;
 	}
 
-	public Animation getAnimation() {
+	public AnimationData getAnimation() {
 		return animation;
 	}
 

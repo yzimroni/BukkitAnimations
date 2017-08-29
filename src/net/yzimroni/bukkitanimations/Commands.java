@@ -1,12 +1,15 @@
 package net.yzimroni.bukkitanimations;
 
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import net.yzimroni.bukkitanimations.data.Animation;
+import net.yzimroni.bukkitanimations.animation.Animation;
+import net.yzimroni.bukkitanimations.animation.AnimationManager;
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
 import net.yzimroni.bukkitanimations.record.RecordingManager;
 import net.yzimroni.bukkitanimations.record.RecordingSession;
@@ -19,9 +22,22 @@ public class Commands implements CommandExecutor {
 			return false;
 		}
 		if (args.length == 0) {
+			sender.sendMessage("/" + label + " list");
 			sender.sendMessage("/" + label + " record <name>");
 			sender.sendMessage("/" + label + " stop");
 			sender.sendMessage("/" + label + " play <name>");
+		} else if (args.length == 1) {
+			if (args[0].equalsIgnoreCase("list")) {
+				List<Animation> animations = AnimationManager.get().getAnimations();
+				if (animations.isEmpty()) {
+					sender.sendMessage("There are no animations");
+				} else {
+					sender.sendMessage("There are " + animations.size() + " animations:");
+					AnimationManager.get().getAnimations().forEach(a -> {
+						sender.sendMessage(a.getData().getName());
+					});
+				}
+			}
 		}
 		if (sender instanceof Player) {
 			Player p = (Player) sender;
@@ -36,16 +52,25 @@ public class Commands implements CommandExecutor {
 			} else if (args.length == 2) {
 				if (args[0].equalsIgnoreCase("record")) {
 					String name = args[1];
+					if (AnimationManager.get().hasAnimation(name)) {
+						p.sendMessage("Amination already exist!");
+						return false;
+					}
 					RecordingSession session = new RecordingSession(name, p.getUniqueId(),
-							new Location(p.getWorld(), 108, 67, 95), new Location(p.getWorld(), 86, 80, 108));
+							new Location(p.getWorld(), 151, 65, 208), new Location(p.getWorld(), 175, 82, 236));
 					session.start();
 					System.out.println("Start recording " + name);
 					p.sendMessage("Start recording " + name);
 				} else if (args[0].equalsIgnoreCase("play")) {
 					String name = args[1];
-					p.sendMessage("Playing " + name);
-					System.out.println("Playing " + name);
-					ReplayingSession play = new ReplayingSession(new Animation(name, p.getUniqueId()));
+					if (!AnimationManager.get().hasAnimation(name)) {
+						p.sendMessage("Amination not found!");
+						return false;
+					}
+					Animation animation = AnimationManager.get().getAnimation(name);
+					p.sendMessage("Playing " + animation.getData().getName());
+					System.out.println("Playing " + animation.getData().getName());
+					ReplayingSession play = new ReplayingSession(animation);
 					play.start();
 				}
 			}

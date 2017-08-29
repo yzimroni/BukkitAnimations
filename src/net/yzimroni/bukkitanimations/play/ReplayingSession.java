@@ -7,7 +7,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import net.yzimroni.bukkitanimations.data.Animation;
+import net.yzimroni.bukkitanimations.animation.Animation;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 
 public class ReplayingSession {
@@ -29,9 +29,8 @@ public class ReplayingSession {
 
 	public void load() {
 		try {
-			actions = new Gson().fromJson(new FileReader(animation.getName() + ".mcanimation"),
-					new TypeToken<List<ActionData>>() {
-					}.getType());
+			actions = new Gson().fromJson(new FileReader(animation.getFile()), new TypeToken<List<ActionData>>() {
+			}.getType());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
