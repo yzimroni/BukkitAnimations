@@ -40,13 +40,20 @@ public class ActionHandler {
 
 	@SuppressWarnings("unchecked")
 	private static void registerDefaultHandlers() {
-		register(ActionType.BLOCK_BREAK, (s, a) -> {
-			a.getLocation(s).getBlock().setType(Material.AIR);
-		});
 		register(ActionType.BLOCK_PLACE, (s, a) -> {
 			Block b = a.getLocation(s).getBlock();
 			MinecraftDataManagers.getBlocks().load(a, b);
 			MinecraftDataManagers.getBlocks().load(a, b.getState());
+		});
+		register(ActionType.BLOCK_BREAK, (s, a) -> {
+			a.getLocation(s).getBlock().setType(Material.AIR);
+		});
+
+		register(ActionType.BLOCK_BREAK_ANIMATION, (s, a) -> {
+			int entityId = a.getEntityId();
+			Location location = a.getLocation(s);
+			int stage = a.getInt("stage");
+			NMSUtils.sendPacket(NMSUtils.createBlockAnimationPacket(entityId, location, stage), location, 64);
 		});
 		register(ActionType.UPDATE_BLOCKSTATE, (s, a) -> {
 			Block b = a.getLocation(s).getBlock();

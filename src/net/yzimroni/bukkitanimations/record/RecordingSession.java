@@ -161,7 +161,6 @@ public class RecordingSession {
 
 	}
 
-
 	@SuppressWarnings("deprecation")
 	private void handlePacket(PacketContainer p) {
 		if (p.getType() == Play.Server.WORLD_EVENT) {
@@ -169,14 +168,18 @@ public class RecordingSession {
 			Effect effect = Effect.getById(effectId);
 			if (effect != null) {
 				Location location = p.getBlockPositionModifier().read(0).toLocation(minLocation.getWorld());
-				int data = p.getIntegers().read(0);
+				int data = p.getIntegers().read(1);
 				boolean disableRelVolume = p.getBooleans().read(0);
 				ActionData action = new ActionData(ActionType.WORLD_EFFECT).data("effect", effect)
 						.data("location", location).data("data", data).data("disableRel", disableRelVolume);
 				addAction(action);
 			}
 		} else if (p.getType() == Play.Server.BLOCK_BREAK_ANIMATION) {
-
+			int entityId = p.getIntegers().read(0);
+			Location location = p.getBlockPositionModifier().read(0).toLocation(minLocation.getWorld());
+			int stage = p.getIntegers().read(1);
+			addAction(new ActionData(ActionType.BLOCK_BREAK_ANIMATION).data("entityId", entityId)
+					.data("location", location).data("stage", stage));
 		}
 	}
 

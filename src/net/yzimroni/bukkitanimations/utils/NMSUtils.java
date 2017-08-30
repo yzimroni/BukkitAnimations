@@ -1,8 +1,10 @@
 package net.yzimroni.bukkitanimations.utils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -18,15 +20,14 @@ public class NMSUtils {
 	private static Method getProfile;
 
 	public static Class<?> getNMSClass(String classname) {
-		String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + ".";
-		String name = "net.minecraft.server." + version + classname;
-		Class<?> nmsClass = null;
+		String nmsVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		String className = "net.minecraft.server." + nmsVersion + "." + classname;
 		try {
-			nmsClass = Class.forName(name);
+			return Class.forName(className);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return nmsClass;
+		return null;
 	}
 
 	public static void pickUp(Entity entity, Player player) {
@@ -59,6 +60,45 @@ public class NMSUtils {
 			Object handle = NMS.getHandle(player);
 			reciveItem = handle.getClass().getMethod("receive", getNMSClass("Entity"), int.class);
 			getProfile = handle.getClass().getMethod("getProfile");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static Object createBlockAnimationPacket(int entityId, Location location, int stage) {
+		try {
+			Constructor<?> packetConstructor = getNMSClass("PacketPlayOutBlockBreakAnimation").getConstructor(int.class,
+					getNMSClass("BlockPosition"), int.class);
+			Constructor<?> blockPosConstructor = getNMSClass("BlockPosition").getConstructor(int.class, int.class,
+					int.class);
+			Object blockPos = blockPosConstructor.newInstance(location.getBlockX(), location.getBlockY(),
+					location.getBlockZ());
+
+			Object packet = packetConstructor.newInstance(entityId, blockPos, stage);
+			return packet;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static void sendPacket(Object packet, Location location, double radius) {
+		double r = radius * radius;
+		;
+		try {
+			location.getWorld().getPlayers().stream().filter(p -> location.distanceSquared(p.getLocation()) < r)
+					.forEach(p -> sendPacket(p, packet));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void sendPacket(Player player, Object packet) {
+		try {
+			Object handle = NMS.getHandle(player);
+			Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
+			Method sendPacket = playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet"));
+			sendPacket.invoke(playerConnection, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
