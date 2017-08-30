@@ -1,9 +1,7 @@
 Bow pulling animation
-Projectile shooting
 Spawn data for all entities
 Spawning Experience Orb
 Spawn/remove hanging
-Block break animation
 Particles
 Update block entity (spawner, mob heads, flower pot, banner, bed color)
 Block Action (pistion, chest/enderchest open/close, shulker box opening)
