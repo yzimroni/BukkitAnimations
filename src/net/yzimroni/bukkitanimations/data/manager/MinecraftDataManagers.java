@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.bukkit.Art;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Rotation;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Ageable;
@@ -18,9 +21,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.material.Attachable;
 import org.bukkit.material.Colorable;
 import org.bukkit.material.FlowerPot;
 import org.bukkit.material.MaterialData;
@@ -30,6 +36,8 @@ import org.bukkit.util.Vector;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 
+import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.trait.Gravity;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.utils.NMSUtils;
 import net.yzimroni.bukkitanimations.utils.Utils;
@@ -136,7 +144,9 @@ public class MinecraftDataManagers {
 				if (a.has("flying")) {
 					boolean flying = (boolean) a.getData("flying");
 					if (Utils.NPCREGISTRY.isNPC(p)) {
-						Utils.NPCREGISTRY.getNPC(p).setFlyable(flying);
+						NPC npc = Utils.NPCREGISTRY.getNPC(p);
+						npc.setFlyable(flying);
+						npc.getTrait(Gravity.class).gravitate(true); // Should be true for no-gravity
 					}
 					p.setAllowFlight(flying);
 					p.setFlying(flying);
@@ -260,6 +270,46 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Projectile object) {
 
+			}
+		});
+
+		ENTITIES.register(Attachable.class, new DataHandler<Attachable>() {
+
+			@Override
+			public void save(ActionData action, Attachable object) {
+				action.data("attachedFace", object.getAttachedFace());
+			}
+
+			@Override
+			public void load(ActionData action, Attachable object) {
+				object.setFacingDirection(BlockFace.valueOf((String) action.getData("attachedFace")).getOppositeFace());
+			}
+		});
+
+		ENTITIES.register(ItemFrame.class, new DataHandler<ItemFrame>() {
+
+			@Override
+			public void save(ActionData action, ItemFrame frame) {
+				action.data("item", frame.getItem()).data("rotation", frame.getRotation());
+			}
+
+			@Override
+			public void load(ActionData action, ItemFrame frame) {
+				frame.setItem(action.getItemStack("item"));
+				frame.setRotation(Rotation.valueOf((String) action.getData("rotation")));
+			}
+		});
+
+		ENTITIES.register(Painting.class, new DataHandler<Painting>() {
+
+			@Override
+			public void save(ActionData action, Painting object) {
+				action.data("art", object.getArt());
+			}
+
+			@Override
+			public void load(ActionData action, Painting object) {
+				object.setArt(Art.valueOf((String) action.getData("art")), true);
 			}
 		});
 

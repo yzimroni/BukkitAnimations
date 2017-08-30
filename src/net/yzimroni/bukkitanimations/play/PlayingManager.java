@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerEggThrowEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.utils.Utils;
@@ -41,10 +46,45 @@ public class PlayingManager implements Listener {
 		}
 	}
 
+	public boolean isAnimationEntity(Entity e) {
+		return e.hasMetadata("animationEntity");
+	}
+
 	@EventHandler
 	public void onCreatureSpawn(PlayerEggThrowEvent e) {
 		if (Utils.NPCREGISTRY.isNPC(e.getPlayer())) {
 			e.setHatching(false);
+		}
+	}
+
+	@EventHandler
+	public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e) {
+		if (isAnimationEntity(e.getEntity())) {
+			e.setCancelled(true);
+			e.setTarget(null);
+		}
+	}
+
+	@EventHandler
+	public void onHangingBreak(HangingBreakEvent e) {
+		if (isAnimationEntity(e.getEntity())) {
+			e.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
+		if (isAnimationEntity(e.getRightClicked())) {
+			e.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent e) {
+		if (isAnimationEntity(e.getEntity())) {
+			if (!(isAnimationEntity(e.getDamager()) || Utils.NPCREGISTRY.isNPC(e.getDamager()))) {
+				e.setCancelled(true);
+			}
 		}
 	}
 

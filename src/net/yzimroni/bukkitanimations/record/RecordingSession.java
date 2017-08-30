@@ -12,6 +12,7 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.HandlerList;
 
 import com.comphenix.protocol.PacketType.Play;
@@ -72,7 +73,7 @@ public class RecordingSession {
 
 	protected void initPacketListener() {
 		packetListener = new PacketAdapter(BukkitAnimationsPlugin.get(), ListenerPriority.LOWEST,
-				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION) {
+				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION, Play.Server.COLLECT) {
 			@Override
 			public void onPacketSending(PacketEvent e) {
 				if (e.getPlayer().getUniqueId().equals(animation.getPlayer())) {
@@ -85,7 +86,8 @@ public class RecordingSession {
 
 	private void onStart() {
 		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation())).forEach(e -> {
-			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
+			ActionData action = new ActionData(
+					e instanceof Projectile ? ActionType.SHOOT_PROJECTILE : ActionType.SPAWN_ENTITY).entityData(e);
 			trackedEntities.put(e, e.getLocation());
 			addAction(action);
 		});
@@ -180,11 +182,29 @@ public class RecordingSession {
 			int stage = p.getIntegers().read(1);
 			addAction(new ActionData(ActionType.BLOCK_BREAK_ANIMATION).data("entityId", entityId)
 					.data("location", location).data("stage", stage));
+		} else if (p.getType() == Play.Server.COLLECT) {
+			int entityId = p.getIntegers().read(0);
+			Entity entity = getTrackedEntityById(entityId);
+			if (entity != null && isEntityTracked(entity)) {
+				int playerId = p.getIntegers().read(1);
+				Entity player = getTrackedEntityById(playerId);
+				if (player != null) {
+					addAction(new ActionData(ActionType.ENTITY_PICKUP).data("entityId", entityId).data("playerId",
+							playerId));
+				} else {
+					addAction(new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", entity));
+				}
+				removeTrackedEntity(entity);
+			}
 		}
 	}
 
 	public boolean isEntityTracked(Entity e) {
 		return trackedEntities.containsKey(e);
+	}
+
+	public Entity getTrackedEntityById(int id) {
+		return trackedEntities.keySet().stream().filter(e -> e.getEntityId() == id).findAny().orElse(null);
 	}
 
 	public void addTrackedEntity(Entity e) {

@@ -66,28 +66,42 @@ public class ActionHandler {
 		});
 
 		register(ActionType.SPAWN_ENTITY, (s, a) -> {
-			Location location = a.getLocation(s);
-			String name = (String) a.getData("name");
 			EntityType type = EntityType.valueOf((String) a.getData("type"));
-			NPC npc = Utils.NPCREGISTRY.createNPC(type, name);
-
 			int entityId = a.getEntityId();
+			Location location = a.getLocation(s);
 
-			if (type == EntityType.PLAYER) {
-				Map<String, Object> textures = (Map<String, Object>) a.getData("textures");
-				if (textures != null && !textures.isEmpty()) {
-					npc.data().set(Skin.CACHED_SKIN_UUID_NAME_METADATA, npc.getName());
-					npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_METADATA, textures.get("value"));
-					npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_SIGN_METADATA, textures.get("signature"));
-					npc.data().set(NPC.PLAYER_SKIN_USE_LATEST, false);
+			Entity entity = null;
+			boolean delayedEntityAdd = false;
+			if (Utils.isSpecialEntity(type)) {
+				entity = location.getWorld().spawnEntity(location, type);
+				if (type == EntityType.PAINTING || type == EntityType.ITEM_FRAME) {
+					delayedEntityAdd = true;
+				} else {
+					s.getEntityTracker().addEntity(entity);
 				}
-			}
-			npc.spawn(location);
-			MinecraftDataManagers.getEntities().load(a, npc.getEntity());
-			Entity e = npc.getEntity();
+			} else {
+				String name = (String) a.getData("name");
+				NPC npc = Utils.NPCREGISTRY.createNPC(type, name);
 
-			s.getEntityTracker().addOldToNewId(entityId, e.getEntityId());
-			s.getEntityTracker().addNPC(npc);
+				if (type == EntityType.PLAYER) {
+					Map<String, Object> textures = (Map<String, Object>) a.getData("textures");
+					if (textures != null && !textures.isEmpty()) {
+						npc.data().set(Skin.CACHED_SKIN_UUID_NAME_METADATA, npc.getName());
+						npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_METADATA, textures.get("value"));
+						npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_SIGN_METADATA, textures.get("signature"));
+						npc.data().set(NPC.PLAYER_SKIN_USE_LATEST, false);
+					}
+				}
+				npc.spawn(location);
+				s.getEntityTracker().addNPC(npc);
+				entity = npc.getEntity();
+			}
+			MinecraftDataManagers.getEntities().load(a, entity);
+			if (delayedEntityAdd) {
+				s.getEntityTracker().addEntity(entity);
+			}
+
+			s.getEntityTracker().addOldToNewId(entityId, entity.getEntityId());
 		});
 
 		register(ActionType.SHOOT_PROJECTILE, (s, a) -> {
@@ -174,6 +188,7 @@ public class ActionHandler {
 			NPC npc = s.getEntityTracker().getNPC(e.getEntityId());
 			e.remove();
 			if (npc != null) {
+				s.getEntityTracker().removeNPC(e.getEntityId());
 				npc.despawn();
 			}
 			s.getEntityTracker().removeEntity(e.getEntityId());

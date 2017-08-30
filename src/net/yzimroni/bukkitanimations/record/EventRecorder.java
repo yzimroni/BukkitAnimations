@@ -22,13 +22,14 @@ import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
@@ -102,9 +103,8 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
-			// TODO make it save the new lines
-			session.addAction(
-					new ActionData(ActionType.UPDATE_BLOCKSTATE).blockData(e.getBlock().getState(), Sign.class));
+			session.addAction(new ActionData(ActionType.UPDATE_BLOCKSTATE)
+					.blockData(e.getBlock().getState(), Sign.class).data("lines", e.getLines()));
 		}
 	}
 
@@ -171,6 +171,15 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onCreatureSpawn(CreatureSpawnEvent e) {
 		if (session.isInside(e.getLocation())) {
+			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
+			session.addTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onHangingPlace(HangingPlaceEvent e) {
+		if (session.isInside(e.getEntity().getLocation()) && session.isInside(e.getBlock().getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
 			session.addTrackedEntity(e.getEntity());
 			session.addAction(action);
@@ -259,16 +268,6 @@ public class EventRecorder implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onItemPickedUp(PlayerPickupItemEvent e) {
-		if (session.isEntityTracked(e.getItem())) {
-			ActionData action = new ActionData(ActionType.ENTITY_PICKUP).data("entityId", e.getItem().getEntityId())
-					.data("playerId", e.getPlayer().getEntityId());
-			session.removeTrackedEntity(e.getItem());
-			session.addAction(action);
-		}
-	}
-
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onEntityDeath(EntityDeathEvent e) {
 		if (session.isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.ENTITY_DEATH).data("entityId", e.getEntity().getEntityId());
@@ -285,4 +284,14 @@ public class EventRecorder implements Listener {
 			session.addAction(action);
 		}
 	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onHangingBreak(HangingBreakEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
+			session.removeTrackedEntity(e.getEntity());
+			session.addAction(action);
+		}
+	}
+
 }
