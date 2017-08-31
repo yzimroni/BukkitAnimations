@@ -182,8 +182,10 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData a, Item i) {
-				i.setItemStack(a.getItemStack("item"));
-				i.setPickupDelay(-1);
+				if (a.has("item")) {
+					i.setItemStack(a.getItemStack("item"));
+					i.setPickupDelay(-1);
+				}
 			}
 		});
 		ENTITIES.register(Colorable.class, new DataHandler<Colorable>() {
@@ -302,7 +304,10 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Attachable object) {
-				object.setFacingDirection(BlockFace.valueOf((String) action.getData("attachedFace")).getOppositeFace());
+				if (action.has("attachedFace")) {
+					object.setFacingDirection(
+							BlockFace.valueOf((String) action.getData("attachedFace")).getOppositeFace());
+				}
 			}
 		});
 
@@ -315,8 +320,12 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, ItemFrame frame) {
-				frame.setItem(action.getItemStack("item"));
-				frame.setRotation(Rotation.valueOf((String) action.getData("rotation")));
+				if (action.has("item")) {
+					frame.setItem(action.getItemStack("item"));
+				}
+				if (action.has("rotation")) {
+					frame.setRotation(Rotation.valueOf((String) action.getData("rotation")));
+				}
 			}
 		});
 
@@ -329,7 +338,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Painting object) {
-				object.setArt(Art.valueOf((String) action.getData("art")), true);
+				if (action.has("art")) {
+					object.setArt(Art.valueOf((String) action.getData("art")), true);
+				}
 			}
 		});
 
@@ -349,18 +360,20 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, ArmorStand stand) {
-				stand.setHeadPose(getEulerAngle(action, "headPose"));
-				stand.setBodyPose(getEulerAngle(action, "bodyPose"));
-				stand.setLeftArmPose(getEulerAngle(action, "leftArmPose"));
-				stand.setRightArmPose(getEulerAngle(action, "rightArmPose"));
-				stand.setLeftLegPose(getEulerAngle(action, "leftLegPose"));
-				stand.setRightLegPose(getEulerAngle(action, "rightLeftPose"));
+				if (action.has("headPose")) {
+					stand.setHeadPose(getEulerAngle(action, "headPose"));
+					stand.setBodyPose(getEulerAngle(action, "bodyPose"));
+					stand.setLeftArmPose(getEulerAngle(action, "leftArmPose"));
+					stand.setRightArmPose(getEulerAngle(action, "rightArmPose"));
+					stand.setLeftLegPose(getEulerAngle(action, "leftLegPose"));
+					stand.setRightLegPose(getEulerAngle(action, "rightLeftPose"));
 
-				stand.setBasePlate((boolean) action.getData("basePlate"));
-				stand.setVisible((boolean) action.getData("visible"));
-				stand.setArms((boolean) action.getData("arms"));
-				stand.setSmall((boolean) action.getData("small"));
-				stand.setMarker((boolean) action.getData("marker"));
+					stand.setBasePlate((boolean) action.getData("basePlate"));
+					stand.setVisible((boolean) action.getData("visible"));
+					stand.setArms((boolean) action.getData("arms"));
+					stand.setSmall((boolean) action.getData("small"));
+					stand.setMarker((boolean) action.getData("marker"));
+				}
 			}
 
 			private EulerAngle getEulerAngle(ActionData action, String name) {
@@ -379,8 +392,12 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Horse object) {
-				object.setColor(Color.valueOf((String) action.getData("color")));
-				object.setStyle(Style.valueOf((String) action.getData("style")));
+				if (action.has("color")) {
+					object.setColor(Color.valueOf((String) action.getData("color")));
+				}
+				if (action.has("style")) {
+					object.setStyle(Style.valueOf((String) action.getData("style")));
+				}
 			}
 		});
 
@@ -408,7 +425,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Ocelot object) {
-				object.setCatType(Type.valueOf((String) action.getData("catType")));
+				if (action.has("catType")) {
+					object.setCatType(Type.valueOf((String) action.getData("catType")));
+				}
 			}
 		});
 
@@ -421,7 +440,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Pig object) {
-				object.setSaddle((boolean) action.getData("saddle"));
+				if (action.has("saddle")) {
+					object.setSaddle((boolean) action.getData("saddle"));
+				}
 			}
 		});
 
@@ -434,7 +455,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Rabbit object) {
-				object.setRabbitType(Rabbit.Type.valueOf((String) action.getData("rabbitType")));
+				if (action.has("rabbitType")) {
+					object.setRabbitType(Rabbit.Type.valueOf((String) action.getData("rabbitType")));
+				}
 			}
 		});
 
@@ -447,7 +470,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Sheep object) {
-				object.setSheared((boolean) action.getData("sheared"));
+				if (action.has("sheared")) {
+					object.setSheared((boolean) action.getData("sheared"));
+				}
 			}
 		});
 
@@ -460,7 +485,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Slime object) {
-				object.setSize(action.getInt("size"));
+				if (action.has("size")) {
+					object.setSize(action.getInt("size"));
+				}
 			}
 		});
 
@@ -473,7 +500,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Tameable object) {
-				object.setTamed((boolean) action.getData("tamed"));
+				if (action.has("tamed")) {
+					object.setTamed((boolean) action.getData("tamed"));
+				}
 			}
 		});
 
@@ -486,7 +515,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Villager object) {
-				object.setProfession(Profession.valueOf((String) action.getData("profession")));
+				if (action.has("profession")) {
+					object.setProfession(Profession.valueOf((String) action.getData("profession")));
+				}
 			}
 		});
 
@@ -499,7 +530,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Zombie object) {
-				object.setBaby((boolean) action.getData("baby"));
+				if (action.has("baby")) {
+					object.setBaby((boolean) action.getData("baby"));
+				}
 			}
 		});
 
@@ -512,7 +545,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Wolf object) {
-				object.setCollarColor(DyeColor.valueOf((String) action.getData("collarColor")));
+				if (action.has("collarColor")) {
+					object.setCollarColor(DyeColor.valueOf((String) action.getData("collarColor")));
+				}
 			}
 		});
 		/*
@@ -565,10 +600,12 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Sign sign) {
-				@SuppressWarnings("unchecked")
-				String[] lines = (String[]) ((List<String>) action.getData("lines")).toArray(new String[0]);
-				for (int i = 0; i < lines.length; i++) {
-					sign.setLine(i, lines[i]);
+				if (action.has("lines")) {
+					@SuppressWarnings("unchecked")
+					String[] lines = (String[]) ((List<String>) action.getData("lines")).toArray(new String[0]);
+					for (int i = 0; i < lines.length; i++) {
+						sign.setLine(i, lines[i]);
+					}
 				}
 			}
 		});
@@ -597,7 +634,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Banner object) {
-				object.setBaseColor(DyeColor.valueOf((String) action.getData("baseColor")));
+				if (action.has("baseColor")) {
+					object.setBaseColor(DyeColor.valueOf((String) action.getData("baseColor")));
+				}
 			}
 		});
 
@@ -610,7 +649,9 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, CreatureSpawner object) {
-				object.setSpawnedType(EntityType.valueOf((String) action.getData("spawnedType")));
+				if (action.has("spawnedType")) {
+					object.setSpawnedType(EntityType.valueOf((String) action.getData("spawnedType")));
+				}
 			}
 		});
 
