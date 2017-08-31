@@ -3,7 +3,6 @@ package net.yzimroni.bukkitanimations.record;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,16 +24,22 @@ import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Colorable;
 
 import com.google.common.base.Objects;
 
@@ -103,8 +108,8 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
-			session.addAction(new ActionData(ActionType.UPDATE_BLOCKSTATE)
-					.blockData(e.getBlock().getState(), Sign.class).data("lines", e.getLines()));
+			session.addAction(new ActionData(ActionType.UPDATE_BLOCKSTATE).data("location", e.getBlock().getLocation())
+					.data("lines", e.getLines()));
 		}
 	}
 
@@ -189,7 +194,8 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSheepDyeWool(SheepDyeWoolEvent e) {
 		if (session.isEntityTracked(e.getEntity())) {
-			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getEntity(), Colorable.class);
+			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
+					.data("color", e.getColor());
 			session.addAction(action);
 		}
 	}
@@ -291,6 +297,86 @@ public class EventRecorder implements Listener {
 			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
 			session.removeTrackedEntity(e.getEntity());
 			session.addAction(action);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerToggleFlying(PlayerToggleFlightEvent e) {
+		if (session.isEntityTracked(e.getPlayer())) {
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
+					.data("flying", e.isFlying()));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerToggleSprinting(PlayerToggleSprintEvent e) {
+		if (session.isEntityTracked(e.getPlayer())) {
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
+					.data("sprinting", e.isSprinting()));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerToggleFlying(PlayerToggleSneakEvent e) {
+		if (session.isEntityTracked(e.getPlayer())) {
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
+					.data("sneaking", e.isSneaking()));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerJoin(PlayerJoinEvent e) {
+		if (session.isInside(e.getPlayer().getLocation())) {
+			session.addAction(new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getPlayer()));
+			session.addTrackedEntity(e.getPlayer());
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerQuit(PlayerQuitEvent e) {
+		if (session.isEntityTracked(e.getPlayer())) {
+			session.addAction(new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getPlayer().getEntityId()));
+			session.removeTrackedEntity(e.getPlayer());
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onPlayerShearEntity(PlayerShearEntityEvent e) {
+		if (session.isEntityTracked(e.getEntity())) {
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
+					.data("sheared", true));
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
+		if (session.isEntityTracked(e.getRightClicked())) {
+			String equipmentSlotName = null;
+			switch (e.getSlot()) {
+				case HAND:
+					equipmentSlotName = "itemInHand";
+					break;
+				case HEAD:
+					equipmentSlotName = "helmet";
+					break;
+				case CHEST:
+					equipmentSlotName = "chestplate";
+					break;
+				case LEGS:
+					equipmentSlotName = "leggings";
+					break;
+				case FEET:
+					equipmentSlotName = "boots";
+					break;
+				default:
+					throw new IllegalArgumentException("Unknown EquipmentSlot: " + e.getSlot());
+			}
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY)
+					.data("entityId", e.getRightClicked().getEntityId()).data(equipmentSlotName, e.getPlayerItem()));
+			if (session.isEntityTracked(e.getPlayer())) {
+				session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
+						.data("itemInHand", e.getArmorStandItem()));
+			}
 		}
 	}
 

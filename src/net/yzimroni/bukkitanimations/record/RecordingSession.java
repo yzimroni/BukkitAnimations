@@ -114,7 +114,6 @@ public class RecordingSession {
 	}
 
 	private void checkEntityMove() {
-		// TODO Check when entities walk into the recording area
 		List<Entity> toRemove = new ArrayList<Entity>();
 		trackedEntities.entrySet().stream().filter(e -> e.getKey().isValid())
 				.filter(e -> e.getKey().getType() != EntityType.PLAYER).forEach(e -> {
@@ -136,6 +135,13 @@ public class RecordingSession {
 					}
 				});
 		toRemove.forEach(trackedEntities::remove);
+
+		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation()))
+				.filter(e -> !isEntityTracked(e)).forEach(e -> {
+					ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
+					addTrackedEntity(e);
+					addAction(action);
+				});
 	}
 
 	public void handleEntityMove(Entity e, Location from, Location to) {

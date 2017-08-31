@@ -125,9 +125,24 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData a, LivingEntity l) {
+				// Armor can be changed using an array of all the armor items, or by specific
+				// slot (used in armor stand manipulation)
 				if (a.has("armor")) {
 					l.getEquipment().setArmorContents(a.getItemStackList("armor"));
 				}
+				if (a.has("helmet")) {
+					l.getEquipment().setHelmet(a.getItemStack("helmet"));
+				}
+				if (a.has("chestplate")) {
+					l.getEquipment().setChestplate(a.getItemStack("chestplate"));
+				}
+				if (a.has("leggings")) {
+					l.getEquipment().setLeggings(a.getItemStack("leggings"));
+				}
+				if (a.has("boots")) {
+					l.getEquipment().setBoots(a.getItemStack("boots"));
+				}
+
 				if (a.has("itemInHand")) {
 					l.getEquipment().setItemInHand(a.getItemStack("itemInHand"));
 				}
@@ -150,7 +165,7 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void save(ActionData action, Player p) {
-				action.data("flying", p.isFlying());
+				action.data("flying", p.isFlying()).data("sneaking", p.isSneaking()).data("sprinting", p.isSprinting());
 
 				GameProfile profile = NMSUtils.getGameProfile(p);
 				Property textures = profile.getProperties().get("textures").stream().findAny().orElse(null);
@@ -163,13 +178,21 @@ public class MinecraftDataManagers {
 			public void load(ActionData a, Player p) {
 				if (a.has("flying")) {
 					boolean flying = (boolean) a.getData("flying");
-					if (Utils.NPCREGISTRY.isNPC(p)) {
-						NPC npc = Utils.NPCREGISTRY.getNPC(p);
-						npc.setFlyable(flying);
-						npc.getTrait(Gravity.class).gravitate(true); // Should be true for no-gravity
+					if (flying != p.isFlying()) {
+						if (Utils.NPCREGISTRY.isNPC(p)) {
+							NPC npc = Utils.NPCREGISTRY.getNPC(p);
+							npc.setFlyable(flying);
+							npc.getTrait(Gravity.class).gravitate(flying); // Should be true for no-gravity
+						}
+						p.setAllowFlight(flying);
+						p.setFlying(flying);
 					}
-					p.setAllowFlight(flying);
-					p.setFlying(flying);
+				}
+				if (a.has("sneaking")) {
+					p.setSneaking((boolean) a.getData("sneaking"));
+				}
+				if (a.has("sprinting")) {
+					p.setSprinting((boolean) a.getData("sprinting"));
 				}
 			}
 		});
@@ -254,7 +277,7 @@ public class MinecraftDataManagers {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void save(ActionData action, FallingBlock object) {
-				action.data("type", object.getMaterial()).data("data", object.getBlockData());
+				action.data("blockType", object.getMaterial()).data("data", object.getBlockData());
 			}
 
 			@Override
