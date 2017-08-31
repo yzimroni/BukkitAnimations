@@ -328,8 +328,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Attachable object) {
 				if (action.has("attachedFace")) {
-					object.setFacingDirection(
-							BlockFace.valueOf((String) action.get("attachedFace")).getOppositeFace());
+					object.setFacingDirection(BlockFace.valueOf((String) action.get("attachedFace")).getOppositeFace());
 				}
 			}
 		});

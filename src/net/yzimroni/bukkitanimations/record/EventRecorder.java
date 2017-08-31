@@ -130,8 +130,8 @@ public class EventRecorder implements Listener {
 			}
 			if (type != null) {
 				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", type));
-				session.addAction(new ActionData(ActionType.UPDATE_ENTITY)
-						.data("entityId", e.getPlayer().getEntityId()).data("itemInHand", e.getItemStack()));
+				session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
+						.data("itemInHand", e.getItemStack()));
 			}
 		}
 	}
