@@ -1,5 +1,6 @@
 package net.yzimroni.bukkitanimations.play;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,11 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
+
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.EnumWrappers.Particle;
 
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.npc.skin.Skin;
@@ -195,6 +201,31 @@ public class ActionHandler {
 			Location location = a.getLocation(s);
 			int data = a.getInt("data");
 			location.getWorld().playEffect(location, effect, data);
+		});
+
+		register(ActionType.PARTICLE, (s, a) -> {
+			int id = a.getInt("particleId");
+			boolean longDis = (boolean) a.get("longDis");
+			Location location = a.getLocation(s);
+			Vector offset = Vector.deserialize((Map<String, Object>) a.get("offset"));
+			float data = ((Double) a.get("data")).floatValue();
+			int count = a.getInt("count");
+			int[] dataArray = ((ArrayList<Double>) a.get("dataArray")).stream().mapToInt(Double::intValue).toArray();
+
+			PacketContainer particle = new PacketContainer(PacketType.Play.Server.WORLD_PARTICLES);
+			particle.getParticles().write(0, Particle.getById(id));
+			particle.getBooleans().write(0, longDis);
+			particle.getFloat().write(0, (float) location.getX()).write(1, (float) location.getY())
+					.write(2, (float) location.getZ()).write(3, (float) offset.getX()).write(4, (float) offset.getY())
+					.write(5, (float) offset.getZ()).write(6, data);
+			particle.getIntegers().write(0, count);
+			particle.getIntegerArrays().write(0, dataArray);
+
+			try {
+				ProtocolLibrary.getProtocolManager().broadcastServerPacket(particle, location, 64);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		});
 	}
 

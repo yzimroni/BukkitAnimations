@@ -14,6 +14,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.HandlerList;
+import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.PacketType.Play;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -73,7 +74,8 @@ public class RecordingSession {
 
 	protected void initPacketListener() {
 		packetListener = new PacketAdapter(BukkitAnimationsPlugin.get(), ListenerPriority.LOWEST,
-				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION, Play.Server.COLLECT) {
+				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION, Play.Server.COLLECT,
+				Play.Server.WORLD_PARTICLES) {
 			@Override
 			public void onPacketSending(PacketEvent e) {
 				if (e.getPlayer().getUniqueId().equals(animation.getPlayer())) {
@@ -202,6 +204,18 @@ public class RecordingSession {
 				}
 				removeTrackedEntity(entity);
 			}
+		} else if (p.getType() == Play.Server.WORLD_PARTICLES) {
+			int id = p.getParticles().read(0).getId();
+			boolean longDis = p.getBooleans().read(0);
+			Location location = new Location(minLocation.getWorld(), p.getFloat().read(0), p.getFloat().read(1),
+					p.getFloat().read(2));
+			Vector offset = new Vector(p.getFloat().read(3), p.getFloat().read(4), p.getFloat().read(5));
+			float data = p.getFloat().read(6);
+			int count = p.getIntegers().read(0);
+			int[] dataArray = p.getIntegerArrays().read(0);
+			addAction(new ActionData(ActionType.PARTICLE).data("particleId", id).data("longDis", longDis)
+					.data("location", location).data("offset", offset).data("data", data).data("count", count)
+					.data("dataArray", dataArray));
 		}
 	}
 
