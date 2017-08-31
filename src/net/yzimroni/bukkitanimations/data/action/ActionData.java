@@ -40,15 +40,15 @@ public class ActionData {
 		return data.containsKey(key);
 	}
 
-	public Object getData(String key) {
+	public Object get(String key) {
 		return data.get(key);
 	}
 
 	public int getInt(String key) {
-		return ((Number) getData(key)).intValue();
+		return ((Number) get(key)).intValue();
 	}
 
-	public void setData(String key, Object value) {
+	public void set(String key, Object value) {
 		if (value instanceof Location) {
 			Location l = ((Location) value);
 			if (l.getPitch() != 0 || l.getYaw() != 0) {
@@ -75,14 +75,14 @@ public class ActionData {
 	}
 
 	public ActionData data(String key, Object value) {
-		setData(key, value);
+		set(key, value);
 		return this;
 	}
 
 	public Location getLocation(ReplayingSession session) {
 		// TODO relative location
 		@SuppressWarnings("unchecked")
-		Map<String, Object> loc = (Map<String, Object>) getData("location");
+		Map<String, Object> loc = (Map<String, Object>) get("location");
 		if (loc.containsKey("yaw") && loc.containsKey("pitch")) {
 			loc.put("world", Bukkit.getWorlds().get(0).getName());
 			return Location.deserialize(loc);
@@ -92,12 +92,12 @@ public class ActionData {
 	}
 
 	public int getEntityId() {
-		return ((Number) getData("entityId")).intValue();
+		return getInt("entityId");
 	}
 
 	@SuppressWarnings("unchecked")
 	public ItemStack getItemStack(String name) {
-		Map<String, Object> m = (Map<String, Object>) getData(name);
+		Map<String, Object> m = (Map<String, Object>) get(name);
 		if (m == null || m.isEmpty()) {
 			return new ItemStack(Material.AIR);
 		}
@@ -106,7 +106,7 @@ public class ActionData {
 
 	@SuppressWarnings("unchecked")
 	public ItemStack[] getItemStackList(String name) {
-		return ((ArrayList<Map<String, Object>>) getData(name)).stream().map(ItemStack::deserialize)
+		return ((ArrayList<Map<String, Object>>) get(name)).stream().map(ItemStack::deserialize)
 				.toArray(ItemStack[]::new);
 	}
 

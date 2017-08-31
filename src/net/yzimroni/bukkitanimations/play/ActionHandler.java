@@ -66,7 +66,7 @@ public class ActionHandler {
 		});
 
 		register(ActionType.SPAWN_ENTITY, (s, a) -> {
-			EntityType type = EntityType.valueOf((String) a.getData("type"));
+			EntityType type = EntityType.valueOf((String) a.get("type"));
 			int entityId = a.getEntityId();
 			Location location = a.getLocation(s);
 
@@ -80,11 +80,11 @@ public class ActionHandler {
 					s.getEntityTracker().addEntity(entity);
 				}
 			} else {
-				String name = (String) a.getData("name");
+				String name = (String) a.get("name");
 				NPC npc = Utils.NPCREGISTRY.createNPC(type, name);
 
 				if (type == EntityType.PLAYER) {
-					Map<String, Object> textures = (Map<String, Object>) a.getData("textures");
+					Map<String, Object> textures = (Map<String, Object>) a.get("textures");
 					if (textures != null && !textures.isEmpty()) {
 						npc.data().set(Skin.CACHED_SKIN_UUID_NAME_METADATA, npc.getName());
 						npc.data().set(NPC.PLAYER_SKIN_TEXTURE_PROPERTIES_METADATA, textures.get("value"));
@@ -108,8 +108,8 @@ public class ActionHandler {
 			int entityId = a.getEntityId();
 			int shooterId = a.getInt("shooterId");
 			Entity shooter = s.getEntityTracker().getEntityForOldId(shooterId);
-			EntityType type = EntityType.valueOf((String) a.getData("type"));
-			Vector velocity = Vector.deserialize((Map<String, Object>) a.getData("velocity"));
+			EntityType type = EntityType.valueOf((String) a.get("type"));
+			Vector velocity = Vector.deserialize((Map<String, Object>) a.get("velocity"));
 
 			Projectile projectile = null;
 			if (shooter != null && shooter instanceof ProjectileSource) {
@@ -146,7 +146,7 @@ public class ActionHandler {
 		register(ActionType.PLAYER_ANIMATION, (s, a) -> {
 			int entityId = a.getEntityId();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
-			PlayerAnimationType type = PlayerAnimationType.valueOf((String) a.getData("type"));
+			PlayerAnimationType type = PlayerAnimationType.valueOf((String) a.get("type"));
 			if (type == PlayerAnimationType.ARM_SWING) {
 				PlayerAnimation.ARM_SWING.play((Player) e);
 			}
@@ -175,7 +175,7 @@ public class ActionHandler {
 					() -> handle(s, new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", entityId)), 20);
 		});
 		register(ActionType.DESPAWN_ENTITY, (s, a) -> {
-			int entityId = ((Number) a.getData("entityId")).intValue();
+			int entityId = ((Number) a.get("entityId")).intValue();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
 			if (e == null) {
 				return;
@@ -191,7 +191,7 @@ public class ActionHandler {
 		});
 
 		register(ActionType.WORLD_EFFECT, (s, a) -> {
-			Effect effect = Effect.valueOf((String) a.getData("effect"));
+			Effect effect = Effect.valueOf((String) a.get("effect"));
 			Location location = a.getLocation(s);
 			int data = a.getInt("data");
 			location.getWorld().playEffect(location, effect, data);

@@ -102,14 +102,14 @@ public class MinecraftDataManagers {
 			public void load(ActionData action, Entity e) {
 				if (action.has("velocity")) {
 					@SuppressWarnings("unchecked")
-					Vector velocity = Vector.deserialize((Map<String, Object>) action.getData("velocity"));
+					Vector velocity = Vector.deserialize((Map<String, Object>) action.get("velocity"));
 					e.setVelocity(velocity);
 				}
 				if (action.has("customNameVisble")) {
-					e.setCustomNameVisible((boolean) action.getData("customNameVisble"));
+					e.setCustomNameVisible((boolean) action.get("customNameVisble"));
 				}
 				if (action.has("fireTicks")) {
-					e.setFireTicks(((Number) action.getData("fireTicks")).intValue());
+					e.setFireTicks(action.getInt("fireTicks"));
 				}
 			}
 		});
@@ -148,7 +148,7 @@ public class MinecraftDataManagers {
 				}
 				if (a.has("potions")) {
 					@SuppressWarnings("unchecked")
-					ArrayList<Map<String, Object>> potions = (ArrayList<Map<String, Object>>) a.getData("potions");
+					ArrayList<Map<String, Object>> potions = (ArrayList<Map<String, Object>>) a.get("potions");
 					potions.forEach(m -> {
 						// Fixes Gson decode bug
 						m.put("effect", ((Number) m.get("effect")).intValue());
@@ -177,7 +177,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData a, Player p) {
 				if (a.has("flying")) {
-					boolean flying = (boolean) a.getData("flying");
+					boolean flying = (boolean) a.get("flying");
 					if (flying != p.isFlying()) {
 						if (Utils.NPCREGISTRY.isNPC(p)) {
 							NPC npc = Utils.NPCREGISTRY.getNPC(p);
@@ -189,10 +189,10 @@ public class MinecraftDataManagers {
 					}
 				}
 				if (a.has("sneaking")) {
-					p.setSneaking((boolean) a.getData("sneaking"));
+					p.setSneaking((boolean) a.get("sneaking"));
 				}
 				if (a.has("sprinting")) {
-					p.setSprinting((boolean) a.getData("sprinting"));
+					p.setSprinting((boolean) a.get("sprinting"));
 				}
 			}
 		});
@@ -221,7 +221,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Colorable c) {
 				if (action.has("color")) {
-					c.setColor(DyeColor.valueOf((String) action.getData("color")));
+					c.setColor(DyeColor.valueOf((String) action.get("color")));
 				}
 			}
 		});
@@ -238,7 +238,7 @@ public class MinecraftDataManagers {
 					a.setAge(action.getInt("age"));
 				}
 				if (action.has("ageLocked")) {
-					a.setAgeLock((boolean) action.getData("ageLocked"));
+					a.setAgeLock((boolean) action.get("ageLocked"));
 				}
 			}
 
@@ -253,7 +253,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Creeper object) {
 				if (action.has("powered")) {
-					object.setPowered((boolean) action.getData("powered"));
+					object.setPowered((boolean) action.get("powered"));
 				}
 			}
 		});
@@ -267,7 +267,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Enderman object) {
 				if (action.has("carriedMaterial")) {
-					object.setCarriedMaterial((MaterialData) action.getData("carriedMaterial"));
+					object.setCarriedMaterial((MaterialData) action.get("carriedMaterial"));
 				}
 			}
 
@@ -296,7 +296,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Fireball object) {
 				if (action.has("direction")) {
-					object.setDirection(Vector.deserialize((Map<String, Object>) action.getData("direction")));
+					object.setDirection(Vector.deserialize((Map<String, Object>) action.get("direction")));
 				}
 			}
 
@@ -329,7 +329,7 @@ public class MinecraftDataManagers {
 			public void load(ActionData action, Attachable object) {
 				if (action.has("attachedFace")) {
 					object.setFacingDirection(
-							BlockFace.valueOf((String) action.getData("attachedFace")).getOppositeFace());
+							BlockFace.valueOf((String) action.get("attachedFace")).getOppositeFace());
 				}
 			}
 		});
@@ -347,7 +347,7 @@ public class MinecraftDataManagers {
 					frame.setItem(action.getItemStack("item"));
 				}
 				if (action.has("rotation")) {
-					frame.setRotation(Rotation.valueOf((String) action.getData("rotation")));
+					frame.setRotation(Rotation.valueOf((String) action.get("rotation")));
 				}
 			}
 		});
@@ -362,7 +362,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Painting object) {
 				if (action.has("art")) {
-					object.setArt(Art.valueOf((String) action.getData("art")), true);
+					object.setArt(Art.valueOf((String) action.get("art")), true);
 				}
 			}
 		});
@@ -391,17 +391,17 @@ public class MinecraftDataManagers {
 					stand.setLeftLegPose(getEulerAngle(action, "leftLegPose"));
 					stand.setRightLegPose(getEulerAngle(action, "rightLeftPose"));
 
-					stand.setBasePlate((boolean) action.getData("basePlate"));
-					stand.setVisible((boolean) action.getData("visible"));
-					stand.setArms((boolean) action.getData("arms"));
-					stand.setSmall((boolean) action.getData("small"));
-					stand.setMarker((boolean) action.getData("marker"));
+					stand.setBasePlate((boolean) action.get("basePlate"));
+					stand.setVisible((boolean) action.get("visible"));
+					stand.setArms((boolean) action.get("arms"));
+					stand.setSmall((boolean) action.get("small"));
+					stand.setMarker((boolean) action.get("marker"));
 				}
 			}
 
 			private EulerAngle getEulerAngle(ActionData action, String name) {
 				@SuppressWarnings("unchecked")
-				Map<String, Object> map = (Map<String, Object>) action.getData(name);
+				Map<String, Object> map = (Map<String, Object>) action.get(name);
 				return new EulerAngle((double) map.get("x"), (double) map.get("y"), (double) map.get("z"));
 			}
 		});
@@ -416,10 +416,10 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Horse object) {
 				if (action.has("color")) {
-					object.setColor(Color.valueOf((String) action.getData("color")));
+					object.setColor(Color.valueOf((String) action.get("color")));
 				}
 				if (action.has("style")) {
-					object.setStyle(Style.valueOf((String) action.getData("style")));
+					object.setStyle(Style.valueOf((String) action.get("style")));
 				}
 			}
 		});
@@ -449,7 +449,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Ocelot object) {
 				if (action.has("catType")) {
-					object.setCatType(Type.valueOf((String) action.getData("catType")));
+					object.setCatType(Type.valueOf((String) action.get("catType")));
 				}
 			}
 		});
@@ -464,7 +464,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Pig object) {
 				if (action.has("saddle")) {
-					object.setSaddle((boolean) action.getData("saddle"));
+					object.setSaddle((boolean) action.get("saddle"));
 				}
 			}
 		});
@@ -479,7 +479,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Rabbit object) {
 				if (action.has("rabbitType")) {
-					object.setRabbitType(Rabbit.Type.valueOf((String) action.getData("rabbitType")));
+					object.setRabbitType(Rabbit.Type.valueOf((String) action.get("rabbitType")));
 				}
 			}
 		});
@@ -494,7 +494,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Sheep object) {
 				if (action.has("sheared")) {
-					object.setSheared((boolean) action.getData("sheared"));
+					object.setSheared((boolean) action.get("sheared"));
 				}
 			}
 		});
@@ -524,7 +524,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Tameable object) {
 				if (action.has("tamed")) {
-					object.setTamed((boolean) action.getData("tamed"));
+					object.setTamed((boolean) action.get("tamed"));
 				}
 			}
 		});
@@ -539,7 +539,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Villager object) {
 				if (action.has("profession")) {
-					object.setProfession(Profession.valueOf((String) action.getData("profession")));
+					object.setProfession(Profession.valueOf((String) action.get("profession")));
 				}
 			}
 		});
@@ -554,7 +554,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Zombie object) {
 				if (action.has("baby")) {
-					object.setBaby((boolean) action.getData("baby"));
+					object.setBaby((boolean) action.get("baby"));
 				}
 			}
 		});
@@ -569,7 +569,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Wolf object) {
 				if (action.has("collarColor")) {
-					object.setCollarColor(DyeColor.valueOf((String) action.getData("collarColor")));
+					object.setCollarColor(DyeColor.valueOf((String) action.get("collarColor")));
 				}
 			}
 		});
@@ -610,22 +610,22 @@ public class MinecraftDataManagers {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void load(ActionData a, Block b) {
-				b.setType(Material.valueOf((String) a.getData("type")));
-				b.setData(((Number) a.getData("data")).byteValue());
+				b.setType(Material.valueOf((String) a.get("type")));
+				b.setData(((Number) a.get("data")).byteValue());
 			}
 		});
 		BLOCKS.register(Sign.class, new DataHandler<Sign>() {
 
 			@Override
 			public void save(ActionData action, Sign object) {
-				action.setData("lines", object.getLines());
+				action.data("lines", object.getLines());
 			}
 
 			@Override
 			public void load(ActionData action, Sign sign) {
 				if (action.has("lines")) {
 					@SuppressWarnings("unchecked")
-					String[] lines = (String[]) ((List<String>) action.getData("lines")).toArray(new String[0]);
+					String[] lines = (String[]) ((List<String>) action.get("lines")).toArray(new String[0]);
 					for (int i = 0; i < lines.length; i++) {
 						sign.setLine(i, lines[i]);
 					}
@@ -642,7 +642,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, FlowerPot object) {
 				if (action.has("contents")) {
-					object.setContents((MaterialData) action.getData("contents"));
+					object.setContents((MaterialData) action.get("contents"));
 				}
 			}
 		});
@@ -658,7 +658,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, Banner object) {
 				if (action.has("baseColor")) {
-					object.setBaseColor(DyeColor.valueOf((String) action.getData("baseColor")));
+					object.setBaseColor(DyeColor.valueOf((String) action.get("baseColor")));
 				}
 			}
 		});
@@ -673,7 +673,7 @@ public class MinecraftDataManagers {
 			@Override
 			public void load(ActionData action, CreatureSpawner object) {
 				if (action.has("spawnedType")) {
-					object.setSpawnedType(EntityType.valueOf((String) action.getData("spawnedType")));
+					object.setSpawnedType(EntityType.valueOf((String) action.get("spawnedType")));
 				}
 			}
 		});
