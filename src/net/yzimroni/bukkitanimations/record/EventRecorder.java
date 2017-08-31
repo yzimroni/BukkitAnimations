@@ -130,7 +130,7 @@ public class EventRecorder implements Listener {
 			}
 			if (type != null) {
 				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", type));
-				session.addAction(new ActionData(ActionType.UPDATE_EQUIPMENT)
+				session.addAction(new ActionData(ActionType.UPDATE_ENTITY)
 						.data("entityId", e.getPlayer().getEntityId()).data("itemInHand", e.getItemStack()));
 			}
 		}
@@ -141,7 +141,7 @@ public class EventRecorder implements Listener {
 		Block target = e.getBlockClicked().getRelative(e.getBlockFace());
 		if (session.isInside(target.getLocation())) {
 			session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(target).data("type", Material.AIR));
-			session.addAction(new ActionData(ActionType.UPDATE_EQUIPMENT).data("entityId", e.getPlayer().getEntityId())
+			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
 					.data("itemInHand", e.getItemStack()));
 		}
 	}
@@ -226,7 +226,7 @@ public class EventRecorder implements Listener {
 				if (new_ == null) {
 					new_ = new ItemStack(Material.AIR);
 				}
-				ActionData action = new ActionData(ActionType.UPDATE_EQUIPMENT)
+				ActionData action = new ActionData(ActionType.UPDATE_ENTITY)
 						.data("entityId", e.getPlayer().getEntityId()).data("itemInHand", new_);
 				session.addAction(action);
 			}

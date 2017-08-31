@@ -166,11 +166,6 @@ public class ActionHandler {
 			Entity update = s.getEntityTracker().getEntityForOldId(entityId);
 			MinecraftDataManagers.getEntities().load(a, update);
 		});
-		register(ActionType.UPDATE_EQUIPMENT, (s, a) -> {
-			int entityId = a.getEntityId();
-			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
-			MinecraftDataManagers.getEntities().load(a, e);
-		});
 
 		register(ActionType.ENTITY_DEATH, (s, a) -> {
 			int entityId = a.getEntityId();
