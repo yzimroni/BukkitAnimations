@@ -1,6 +1,10 @@
 package net.yzimroni.bukkitanimations.record;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Item;
@@ -9,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
@@ -16,6 +21,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
@@ -267,10 +273,12 @@ public class EventRecorder implements Listener {
 			session.removeTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
-		ItemStack clone = e.getTarget().getItemStack().clone();
-		clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
-		ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getTarget(), Item.class);
-		session.addAction(action);
+		if (session.isEntityTracked(e.getTarget())) {
+			ItemStack clone = e.getTarget().getItemStack().clone();
+			clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
+			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getTarget(), Item.class);
+			session.addAction(action);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -378,6 +386,22 @@ public class EventRecorder implements Listener {
 						.data("itemInHand", e.getArmorStandItem()));
 			}
 		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onBlockExplode(BlockExplodeEvent e) {
+		recordExplosion(e.getBlock().getLocation(), e.blockList());
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onEntityExplode(EntityExplodeEvent e) {
+		recordExplosion(e.getLocation(), e.blockList());
+	}
+
+	private void recordExplosion(Location location, List<Block> blocks) {
+		// TODO relative location
+		session.addAction(new ActionData(ActionType.EXPLOSION).data("location", location).data("blocks",
+				blocks.stream().map(Block::getLocation).map(Location::toVector).collect(Collectors.toList())));
 	}
 
 }

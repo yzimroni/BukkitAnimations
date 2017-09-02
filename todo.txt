@@ -6,7 +6,6 @@ Multi block change
 Armor updates and item in hand updates when changed from the inventory
 Sounds
 Update entity metadata
-Explosions
 Map (map item)
 Entity velocity (is it needed?)
 Entity passengers
@@ -17,6 +16,6 @@ Vehicles (minecart, boats)
 Fix armor stand destroying
 
 
-Per version class
+Per version class / Multi version support
 Offset location to replays
 Save blocks in replays

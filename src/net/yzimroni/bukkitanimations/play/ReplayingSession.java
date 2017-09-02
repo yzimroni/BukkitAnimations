@@ -66,6 +66,7 @@ public class ReplayingSession {
 
 		if (actions.size() == index) {
 			stop();
+			return;
 		}
 
 		tick++;

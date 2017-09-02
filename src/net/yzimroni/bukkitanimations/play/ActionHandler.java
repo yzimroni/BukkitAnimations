@@ -1,10 +1,13 @@
 package net.yzimroni.bukkitanimations.play;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -226,6 +229,35 @@ public class ActionHandler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		});
+
+		register(ActionType.EXPLOSION, (s, a) -> {
+			Location location = a.getLocation(s);
+			List<Map<String, Object>> blockList = (List<Map<String, Object>>) a.get("blocks");
+			List<Block> blocks = blockList.stream().map(m -> {
+				// TODO relative location
+				Vector v = Vector.deserialize(m);
+				return v.toLocation(Bukkit.getWorlds().get(0)).getBlock();
+			}).collect(Collectors.toList());
+
+			// World#createExplosion allows to modify affected blocks only via events and it
+			// drops items from blocks, so i think its better to send the explosion packet
+			// directly
+
+			PacketContainer explosion = new PacketContainer(PacketType.Play.Server.EXPLOSION);
+			explosion.getDoubles().write(0, location.getX()).write(1, location.getY()).write(2, location.getZ());
+			explosion.getFloat().write(0, 4F); // Radius, unused by clients
+			explosion.getBlockPositionCollectionModifier().write(0, Collections.emptyList()); // Block removal is
+																								// handled below
+			try {
+				ProtocolLibrary.getProtocolManager().broadcastServerPacket(explosion, location, 64);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			blocks.forEach(b -> {
+				b.setType(Material.AIR);
+			});
 		});
 	}
 

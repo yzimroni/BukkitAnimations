@@ -12,5 +12,5 @@ public enum ActionType {
 	PLAYER_ANIMATION,
 
 	// World
-	WORLD_EFFECT, PARTICLE;
+	WORLD_EFFECT, PARTICLE, EXPLOSION;
 }
