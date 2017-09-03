@@ -3,7 +3,6 @@ package net.yzimroni.bukkitanimations.record;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,8 +46,9 @@ public class RecordingSession {
 	private EventRecorder eventRecorder;
 	private PacketListener packetListener;
 
+	private RecordingTracker tracker;
+
 	private List<ActionData> actions = new ArrayList<ActionData>();
-	private HashMap<Entity, Location> trackedEntities = new HashMap<Entity, Location>();
 
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
 		this.animation = new AnimationData(name, uuid);
@@ -65,6 +65,7 @@ public class RecordingSession {
 			return;
 		}
 		running = true;
+		this.tracker = new RecordingTracker(this);
 		eventRecorder = new EventRecorder(this);
 		Bukkit.getPluginManager().registerEvents(eventRecorder, BukkitAnimationsPlugin.get());
 		initPacketListener();
@@ -90,7 +91,7 @@ public class RecordingSession {
 		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation())).forEach(e -> {
 			ActionData action = new ActionData(
 					e instanceof Projectile ? ActionType.SHOOT_PROJECTILE : ActionType.SPAWN_ENTITY).entityData(e);
-			trackedEntities.put(e, e.getLocation());
+			getTracker().addTrackedEntity(e);
 			addAction(action);
 		});
 	}
@@ -117,7 +118,7 @@ public class RecordingSession {
 
 	private void checkEntityMove() {
 		List<Entity> toRemove = new ArrayList<Entity>();
-		trackedEntities.entrySet().stream().filter(e -> e.getKey().isValid())
+		getTracker().getTrackedEntities().entrySet().stream().filter(e -> e.getKey().isValid())
 				.filter(e -> e.getKey().getType() != EntityType.PLAYER).forEach(e -> {
 					Location location = e.getKey().getLocation();
 					// System.out.println(location.getYaw() + " " + location.getPitch());
@@ -136,12 +137,12 @@ public class RecordingSession {
 						}
 					}
 				});
-		toRemove.forEach(trackedEntities::remove);
+		toRemove.forEach(getTracker().getTrackedEntities()::remove);
 
 		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation()))
-				.filter(e -> !isEntityTracked(e)).forEach(e -> {
+				.filter(e -> !getTracker().isEntityTracked(e)).forEach(e -> {
 					ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
-					addTrackedEntity(e);
+					getTracker().addTrackedEntity(e);
 					addAction(action);
 				});
 	}
@@ -150,19 +151,19 @@ public class RecordingSession {
 		boolean toInside = isInside(to);
 		boolean fromInside = isInside(from);
 		if (toInside && !fromInside) {
-			if (!isEntityTracked(e)) {
+			if (!getTracker().isEntityTracked(e)) {
 				ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e);
-				addTrackedEntity(e);
+				getTracker().addTrackedEntity(e);
 				addAction(action);
 			}
 		} else if (!toInside && fromInside) {
-			if (isEntityTracked(e)) {
+			if (getTracker().isEntityTracked(e)) {
 				ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntityId());
-				removeTrackedEntity(e);
+				getTracker().removeTrackedEntity(e);
 				addAction(action);
 			}
 		} else if (toInside && fromInside) {
-			if (isEntityTracked(e)) {
+			if (getTracker().isEntityTracked(e)) {
 				ActionData action = new ActionData(ActionType.ENTITY_MOVE).data("entityId", e.getEntityId())
 						.data("location", to);
 				addAction(action);
@@ -192,17 +193,17 @@ public class RecordingSession {
 					.data("location", location).data("stage", stage));
 		} else if (p.getType() == Play.Server.COLLECT) {
 			int entityId = p.getIntegers().read(0);
-			Entity entity = getTrackedEntityById(entityId);
-			if (entity != null && isEntityTracked(entity)) {
+			Entity entity = getTracker().getTrackedEntityById(entityId);
+			if (entity != null && getTracker().isEntityTracked(entity)) {
 				int playerId = p.getIntegers().read(1);
-				Entity player = getTrackedEntityById(playerId);
+				Entity player = getTracker().getTrackedEntityById(playerId);
 				if (player != null) {
 					addAction(new ActionData(ActionType.ENTITY_PICKUP).data("entityId", entityId).data("playerId",
 							playerId));
 				} else {
 					addAction(new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", entity));
 				}
-				removeTrackedEntity(entity);
+				getTracker().removeTrackedEntity(entity);
 			}
 		} else if (p.getType() == Play.Server.WORLD_PARTICLES) {
 			int id = p.getParticles().read(0).getId();
@@ -217,22 +218,6 @@ public class RecordingSession {
 					.data("location", location).data("offset", offset).data("data", data).data("count", count)
 					.data("dataArray", dataArray));
 		}
-	}
-
-	public boolean isEntityTracked(Entity e) {
-		return trackedEntities.containsKey(e);
-	}
-
-	public Entity getTrackedEntityById(int id) {
-		return trackedEntities.keySet().stream().filter(e -> e.getEntityId() == id).findAny().orElse(null);
-	}
-
-	public void addTrackedEntity(Entity e) {
-		trackedEntities.put(e, e.getLocation());
-	}
-
-	public void removeTrackedEntity(Entity e) {
-		trackedEntities.remove(e);
 	}
 
 	public void stop() {
@@ -263,6 +248,10 @@ public class RecordingSession {
 
 	public AnimationData getAnimation() {
 		return animation;
+	}
+
+	public RecordingTracker getTracker() {
+		return tracker;
 	}
 
 }

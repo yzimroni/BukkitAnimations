@@ -183,7 +183,7 @@ public class EventRecorder implements Listener {
 	public void onCreatureSpawn(CreatureSpawnEvent e) {
 		if (session.isInside(e.getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
-			session.addTrackedEntity(e.getEntity());
+			session.getTracker().addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
@@ -192,14 +192,14 @@ public class EventRecorder implements Listener {
 	public void onHangingPlace(HangingPlaceEvent e) {
 		if (session.isInside(e.getEntity().getLocation()) && session.isInside(e.getBlock().getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
-			session.addTrackedEntity(e.getEntity());
+			session.getTracker().addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSheepDyeWool(SheepDyeWoolEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
 					.data("color", e.getColor());
 			session.addAction(action);
@@ -208,7 +208,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.ENTITY_DAMAGE).data("entityId", e.getEntity().getEntityId());
 			session.addAction(action);
 		}
@@ -216,7 +216,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerAnimation(PlayerAnimationEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			ActionData action = new ActionData(ActionType.PLAYER_ANIMATION)
 					.data("entityId", e.getPlayer().getEntityId()).data("type", e.getAnimationType());
 			session.addAction(action);
@@ -225,7 +225,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerItemHeld(PlayerItemHeldEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			ItemStack old = e.getPlayer().getInventory().getItem(e.getPreviousSlot());
 			ItemStack new_ = e.getPlayer().getInventory().getItem(e.getNewSlot());
 			if (!Objects.equal(old, new_)) {
@@ -243,7 +243,7 @@ public class EventRecorder implements Listener {
 	public void onItemDropped(PlayerDropItemEvent e) {
 		if (session.isInside(e.getItemDrop().getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getItemDrop());
-			session.addTrackedEntity(e.getItemDrop());
+			session.getTracker().addTrackedEntity(e.getItemDrop());
 			session.addAction(action);
 		}
 	}
@@ -252,7 +252,7 @@ public class EventRecorder implements Listener {
 	public void onItemSpawn(ItemSpawnEvent e) {
 		if (session.isInside(e.getEntity().getLocation())) {
 			ActionData action = new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getEntity());
-			session.addTrackedEntity(e.getEntity());
+			session.getTracker().addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
@@ -261,19 +261,19 @@ public class EventRecorder implements Listener {
 	public void onProjectileLaunch(ProjectileLaunchEvent e) {
 		if (session.isInside(e.getEntity().getLocation())) {
 			ActionData action = new ActionData(ActionType.SHOOT_PROJECTILE).entityData(e.getEntity());
-			session.addTrackedEntity(e.getEntity());
+			session.getTracker().addTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onItemMerge(ItemMergeEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
-			session.removeTrackedEntity(e.getEntity());
+			session.getTracker().removeTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
-		if (session.isEntityTracked(e.getTarget())) {
+		if (session.getTracker().isEntityTracked(e.getTarget())) {
 			ItemStack clone = e.getTarget().getItemStack().clone();
 			clone.setAmount(clone.getAmount() + e.getEntity().getItemStack().getAmount());
 			ActionData action = new ActionData(ActionType.UPDATE_ENTITY).entityData(e.getTarget(), Item.class);
@@ -283,34 +283,34 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onEntityDeath(EntityDeathEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.ENTITY_DEATH).data("entityId", e.getEntity().getEntityId());
-			session.removeTrackedEntity(e.getEntity());
+			session.getTracker().removeTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onItemDespawn(ItemDespawnEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
-			session.removeTrackedEntity(e.getEntity());
+			session.getTracker().removeTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onHangingBreak(HangingBreakEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			ActionData action = new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getEntity().getEntityId());
-			session.removeTrackedEntity(e.getEntity());
+			session.getTracker().removeTrackedEntity(e.getEntity());
 			session.addAction(action);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerToggleFlying(PlayerToggleFlightEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
 					.data("flying", e.isFlying()));
 		}
@@ -318,7 +318,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerToggleSprinting(PlayerToggleSprintEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
 					.data("sprinting", e.isSprinting()));
 		}
@@ -326,7 +326,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerToggleFlying(PlayerToggleSneakEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
 					.data("sneaking", e.isSneaking()));
 		}
@@ -336,21 +336,21 @@ public class EventRecorder implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		if (session.isInside(e.getPlayer().getLocation())) {
 			session.addAction(new ActionData(ActionType.SPAWN_ENTITY).entityData(e.getPlayer()));
-			session.addTrackedEntity(e.getPlayer());
+			session.getTracker().addTrackedEntity(e.getPlayer());
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		if (session.isEntityTracked(e.getPlayer())) {
+		if (session.getTracker().isEntityTracked(e.getPlayer())) {
 			session.addAction(new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", e.getPlayer().getEntityId()));
-			session.removeTrackedEntity(e.getPlayer());
+			session.getTracker().removeTrackedEntity(e.getPlayer());
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerShearEntity(PlayerShearEntityEvent e) {
-		if (session.isEntityTracked(e.getEntity())) {
+		if (session.getTracker().isEntityTracked(e.getEntity())) {
 			session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
 					.data("sheared", true));
 		}
@@ -358,7 +358,7 @@ public class EventRecorder implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
-		if (session.isEntityTracked(e.getRightClicked())) {
+		if (session.getTracker().isEntityTracked(e.getRightClicked())) {
 			String equipmentSlotName = null;
 			switch (e.getSlot()) {
 				case HAND:
@@ -381,7 +381,7 @@ public class EventRecorder implements Listener {
 			}
 			session.addAction(new ActionData(ActionType.UPDATE_ENTITY)
 					.data("entityId", e.getRightClicked().getEntityId()).data(equipmentSlotName, e.getPlayerItem()));
-			if (session.isEntityTracked(e.getPlayer())) {
+			if (session.getTracker().isEntityTracked(e.getPlayer())) {
 				session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getPlayer().getEntityId())
 						.data("itemInHand", e.getArmorStandItem()));
 			}
