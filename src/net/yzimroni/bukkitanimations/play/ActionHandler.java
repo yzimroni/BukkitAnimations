@@ -170,6 +170,13 @@ public class ActionHandler {
 			}
 			handle(s, new ActionData(ActionType.DESPAWN_ENTITY).data("entityId", entityId));
 		});
+		register(ActionType.ENTITY_ITEM_USE, (s, a) -> {
+			int entityId = a.getEntityId();
+			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
+			boolean useItem = (boolean) a.get("useItem");
+			NMSUtils.updateEntityUseItem(e, useItem);
+		});
+
 		register(ActionType.UPDATE_ENTITY, (s, a) -> {
 			int entityId = a.getEntityId();
 			Entity update = s.getEntityTracker().getEntityForOldId(entityId);

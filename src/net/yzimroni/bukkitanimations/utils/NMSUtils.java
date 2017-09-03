@@ -1,6 +1,7 @@
 package net.yzimroni.bukkitanimations.utils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.bukkit.Bukkit;
@@ -35,6 +36,26 @@ public class NMSUtils {
 		try {
 			Object handle = NMS.getHandle(player);
 			reciveItem.invoke(handle, NMS.getHandle(entity), 1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updateEntityUseItem(Entity entity, boolean useItem) {
+		try {
+			Object handle = NMS.getHandle(entity);
+			Field dataWatcherField = getNMSClass("Entity").getDeclaredField("datawatcher");
+			dataWatcherField.setAccessible(true);
+			Object dataWatcher = dataWatcherField.get(handle);
+			Method getByteMethod = dataWatcher.getClass().getMethod("getByte", int.class);
+			byte data = (byte) getByteMethod.invoke(dataWatcher, 0);
+			if (useItem) {
+				data = (byte) (data | 1 << 4);
+			} else {
+				data = (byte) (data & ~(1 << 4));
+			}
+			Method watchMethod = dataWatcher.getClass().getMethod("watch", int.class, Object.class);
+			watchMethod.invoke(dataWatcher, 0, data);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

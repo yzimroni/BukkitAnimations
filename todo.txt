@@ -1,4 +1,3 @@
-Bow pulling animation
 Spawn data for all entities
 Update block entity (spawner, mob heads, flower pot, banner, bed color)
 Block Action (pistion, chest/enderchest open/close, shulker box opening)

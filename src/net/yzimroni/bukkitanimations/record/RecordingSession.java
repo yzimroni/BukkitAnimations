@@ -22,6 +22,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
@@ -76,7 +77,7 @@ public class RecordingSession {
 	protected void initPacketListener() {
 		packetListener = new PacketAdapter(BukkitAnimationsPlugin.get(), ListenerPriority.LOWEST,
 				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION, Play.Server.COLLECT,
-				Play.Server.WORLD_PARTICLES) {
+				Play.Server.WORLD_PARTICLES, Play.Server.ENTITY_METADATA) {
 			@Override
 			public void onPacketSending(PacketEvent e) {
 				if (e.getPlayer().getUniqueId().equals(animation.getPlayer())) {
@@ -217,7 +218,30 @@ public class RecordingSession {
 			addAction(new ActionData(ActionType.PARTICLE).data("particleId", id).data("longDis", longDis)
 					.data("location", location).data("offset", offset).data("data", data).data("count", count)
 					.data("dataArray", dataArray));
+		} else if (p.getType() == Play.Server.ENTITY_METADATA) {
+			int entityId = p.getIntegers().read(0);
+			Entity entity = getTracker().getTrackedEntityById(entityId);
+			if (entity != null && getTracker().isEntityTracked(entity)) {
+				List<WrappedWatchableObject> metadata = p.getWatchableCollectionModifier().read(0);
+				for (WrappedWatchableObject w : metadata) {
+					if (w.getIndex() == 0) {
+						byte value = (byte) w.getValue();
+						boolean itemUse = (value & 1 << 4) != 0;
+						if (itemUse != getTracker().isEntityUsingItem(entityId)) {
+							if (itemUse) {
+								getTracker().addEntityUseItem(entityId);
+							} else {
+								getTracker().removeEntityUseItem(entityId);
+							}
+							addAction(new ActionData(ActionType.ENTITY_ITEM_USE).data("entityId", entityId)
+									.data("useItem", itemUse));
+						}
+						break;
+					}
+				}
+			}
 		}
+
 	}
 
 	public void stop() {
