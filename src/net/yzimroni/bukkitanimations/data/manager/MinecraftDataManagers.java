@@ -3,6 +3,7 @@ package net.yzimroni.bukkitanimations.data.manager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Art;
@@ -10,20 +11,26 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Rotation;
+import org.bukkit.SkullType;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.Sign;
+import org.bukkit.block.Skull;
+import org.bukkit.block.banner.Pattern;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Firework;
+import org.bukkit.entity.Guardian;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
@@ -39,12 +46,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.Colorable;
 import org.bukkit.material.FlowerPot;
@@ -562,7 +573,7 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void save(ActionData action, Wolf object) {
-				action.data("collarColor", object.getCollarColor());
+				action.data("collarColor", object.getCollarColor()).data("sitting", object.isSitting());
 			}
 
 			@Override
@@ -570,11 +581,78 @@ public class MinecraftDataManagers {
 				if (action.has("collarColor")) {
 					object.setCollarColor(DyeColor.valueOf((String) action.get("collarColor")));
 				}
+				if (action.has("sitting")) {
+					object.setSitting((boolean) action.get("sitting"));
+				}
 			}
 		});
-		/*
-		 * TODO AreaEffectCloud Firework
-		 */
+
+		ENTITIES.register(Skeleton.class, new DataHandler<Skeleton>() {
+
+			@Override
+			public void save(ActionData action, Skeleton object) {
+				action.data("skeletonType", object.getSkeletonType());
+			}
+
+			@Override
+			public void load(ActionData action, Skeleton object) {
+				if (action.has("skeletonType")) {
+					object.setSkeletonType(SkeletonType.valueOf((String) action.get("skeletonType")));
+				}
+			}
+
+		});
+
+		ENTITIES.register(Guardian.class, new DataHandler<Guardian>() {
+
+			@Override
+			public void save(ActionData action, Guardian object) {
+				action.data("elder", object.isElder());
+			}
+
+			@Override
+			public void load(ActionData action, Guardian object) {
+				if (action.has("elder")) {
+					object.setElder((boolean) action.get("elder"));
+				}
+			}
+
+		});
+
+		ENTITIES.register(Arrow.class, new DataHandler<Arrow>() {
+
+			@Override
+			public void save(ActionData action, Arrow object) {
+				action.data("critical", object.isCritical());
+			}
+
+			@Override
+			public void load(ActionData action, Arrow object) {
+				if (action.has("critical")) {
+					object.setCritical((boolean) action.get("critical"));
+				}
+			}
+
+		});
+
+		ENTITIES.register(Firework.class, new DataHandler<Firework>() {
+
+			@Override
+			public void save(ActionData action, Firework object) {
+				ItemStack fireWorkItem = new ItemStack(Material.FIREWORK);
+				fireWorkItem.setItemMeta(object.getFireworkMeta());
+				action.data("fireworkData", fireWorkItem);
+			}
+
+			@Override
+			public void load(ActionData action, Firework object) {
+				if (action.has("fireworkData")) {
+					ItemStack fireWorkItem = action.getItemStack("fireworkData");
+					object.setFireworkMeta((FireworkMeta) fireWorkItem.getItemMeta());
+				}
+			}
+
+		});
 	}
 
 	private static void createBlocks() {
@@ -647,11 +725,11 @@ public class MinecraftDataManagers {
 		});
 
 		BLOCKS.register(Banner.class, new DataHandler<Banner>() {
-			// TODO patterns
 
 			@Override
 			public void save(ActionData action, Banner object) {
-				action.data("baseColor", object.getBaseColor());
+				action.data("baseColor", object.getBaseColor()).data("patterns",
+						object.getPatterns().stream().map(Pattern::serialize).collect(Collectors.toList()));
 			}
 
 			@Override
@@ -659,6 +737,13 @@ public class MinecraftDataManagers {
 				if (action.has("baseColor")) {
 					object.setBaseColor(DyeColor.valueOf((String) action.get("baseColor")));
 				}
+				if (action.has("patterns")) {
+					@SuppressWarnings("unchecked")
+					List<Pattern> patterns = ((List<Map<String, Object>>) action.get("patterns")).stream()
+							.map(Pattern::new).collect(Collectors.toList());
+					object.setPatterns(patterns);
+				}
+				object.update(true);
 			}
 		});
 
@@ -677,9 +762,38 @@ public class MinecraftDataManagers {
 			}
 		});
 
-		/*
-		 * TODO skull
-		 */
+		BLOCKS.register(Skull.class, new DataHandler<Skull>() {
+
+			@Override
+			public void save(ActionData action, Skull object) {
+				action.data("skullType", object.getSkullType()).data("rotation", object.getRotation());
+				if (object.hasOwner()) {
+					// TODO fix it, make it save properties (for some reason gson save an empty
+					// properties list)
+					action.data("profile", NMSUtils.getSkullProfile(object));
+				}
+			}
+
+			@Override
+			public void load(ActionData action, Skull object) {
+				if (action.has("skullType")) {
+					object.setSkullType(SkullType.valueOf((String) action.get("skullType")));
+				}
+				if (action.has("rotation")) {
+					object.setRotation(BlockFace.valueOf((String) action.get("rotation")));
+				}
+				if (action.has("profile")) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> map = (Map<String, Object>) action.get("profile");
+					GameProfile profile = new GameProfile(UUID.fromString((String) map.get("id")),
+							(String) map.get("name"));
+					// TODO add properties to the profile
+					NMSUtils.updateSkullProfile(object, profile);
+				}
+				object.update(true);
+			}
+
+		});
 	}
 
 	public static DataManager getEntities() {

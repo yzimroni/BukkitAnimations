@@ -19,6 +19,9 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreeperPowerEvent;
+import org.bukkit.event.entity.EntityBreakDoorEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -27,6 +30,7 @@ import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.entity.SheepRegrowWoolEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
@@ -402,6 +406,30 @@ public class EventRecorder implements Listener {
 		// TODO relative location
 		session.addAction(new ActionData(ActionType.EXPLOSION).data("location", location).data("blocks",
 				blocks.stream().map(Block::getLocation).map(Location::toVector).collect(Collectors.toList())));
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onCreeperPower(CreeperPowerEvent e) {
+		session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
+				.data("powered", true));
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onEntityBreakDoor(EntityBreakDoorEvent e) {
+		session.addAction(new ActionData(ActionType.BLOCK_BREAK).data("location", e.getBlock().getLocation()));
+	}
+
+	@SuppressWarnings("deprecation")
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onEntityChangeBlock(EntityChangeBlockEvent e) {
+		session.addAction(new ActionData(ActionType.BLOCK_PLACE).data("location", e.getBlock().getLocation())
+				.data("type", e.getTo()).data("data", e.getData()));
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	public void onSheepRegrowWool(SheepRegrowWoolEvent e) {
+		session.addAction(new ActionData(ActionType.UPDATE_ENTITY).data("entityId", e.getEntity().getEntityId())
+				.data("sheared", false));
 	}
 
 }

@@ -1,10 +1,7 @@
-Spawn data for all entities
-Update block entity (spawner, mob heads, flower pot, banner, bed color)
 Block Action (pistion, chest/enderchest open/close, shulker box opening)
 Multi block change
 Armor updates and item in hand updates when changed from the inventory
 Sounds
-Update entity metadata
 Map (map item)
 Entity velocity (is it needed?)
 Entity passengers
