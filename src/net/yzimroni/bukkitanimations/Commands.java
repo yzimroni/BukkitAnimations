@@ -71,7 +71,7 @@ public class Commands implements CommandExecutor {
 					Animation animation = AnimationManager.get().getAnimation(name);
 					p.sendMessage("Playing " + animation.getData().getName());
 					System.out.println("Playing " + animation.getData().getName());
-					ReplayingSession play = new ReplayingSession(animation);
+					ReplayingSession play = new ReplayingSession(animation, new Location(p.getWorld(), 113, 93, 208));
 					play.start();
 				}
 			}

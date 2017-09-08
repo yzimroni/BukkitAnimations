@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -15,6 +14,7 @@ import org.bukkit.util.Vector;
 
 import net.yzimroni.bukkitanimations.data.manager.MinecraftDataManagers;
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
+import net.yzimroni.bukkitanimations.record.RecordingSession;
 
 public class ActionData {
 
@@ -49,14 +49,7 @@ public class ActionData {
 	}
 
 	public void set(String key, Object value) {
-		if (value instanceof Location) {
-			Location l = ((Location) value);
-			if (l.getPitch() != 0 || l.getYaw() != 0) {
-				value = l.serialize();
-			} else {
-				value = ((Location) value).toVector();
-			}
-		} else if (value instanceof ItemStack) {
+		if (value instanceof ItemStack) {
 			value = ((ItemStack) value).serialize();
 		} else if (value instanceof ItemStack[]) {
 			ItemStack[] list = (ItemStack[]) value;
@@ -79,16 +72,23 @@ public class ActionData {
 		return this;
 	}
 
+	public void applyOffset(RecordingSession session) {
+		data.entrySet().stream().filter(e -> e.getValue() instanceof Location).forEach(e -> {
+			Location l = session.getRelativeLocation(((Location) e.getValue()).clone());
+			e.setValue(l.serialize());
+		});
+	}
+
 	public Location getLocation(ReplayingSession session) {
-		// TODO relative location
 		@SuppressWarnings("unchecked")
 		Map<String, Object> loc = (Map<String, Object>) get("location");
 		if (loc.containsKey("yaw") && loc.containsKey("pitch")) {
-			loc.put("world", Bukkit.getWorlds().get(0).getName());
-			return Location.deserialize(loc);
+			loc.put("world", session.getBaseLocation().getWorld().getName());
+			return session.getAbsoluteLocation(Location.deserialize(loc));
 		}
 
-		return Vector.deserialize(loc).toLocation(Bukkit.getWorlds().get(0));
+		Location l = Vector.deserialize(loc).toLocation(session.getBaseLocation().getWorld());
+		return session.getAbsoluteLocation(l);
 	}
 
 	public int getEntityId() {

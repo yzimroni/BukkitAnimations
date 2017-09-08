@@ -403,9 +403,9 @@ public class EventRecorder implements Listener {
 	}
 
 	private void recordExplosion(Location location, List<Block> blocks) {
-		// TODO relative location
 		session.addAction(new ActionData(ActionType.EXPLOSION).data("location", location).data("blocks",
-				blocks.stream().map(Block::getLocation).map(Location::toVector).collect(Collectors.toList())));
+				blocks.stream().map(Block::getLocation).map(session::getRelativeLocation).map(Location::toVector)
+						.collect(Collectors.toList())));
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

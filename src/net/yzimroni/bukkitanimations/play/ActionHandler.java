@@ -242,9 +242,8 @@ public class ActionHandler {
 			Location location = a.getLocation(s);
 			List<Map<String, Object>> blockList = (List<Map<String, Object>>) a.get("blocks");
 			List<Block> blocks = blockList.stream().map(m -> {
-				// TODO relative location
 				Vector v = Vector.deserialize(m);
-				return v.toLocation(Bukkit.getWorlds().get(0)).getBlock();
+				return s.getAbsoluteLocation(v).getBlock();
 			}).collect(Collectors.toList());
 
 			// World#createExplosion allows to modify affected blocks only via events and it

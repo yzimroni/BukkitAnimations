@@ -13,5 +13,4 @@ Fix armor stand destroying
 
 
 Per version class / Multi version support
-Offset location to replays
 Save blocks in replays

@@ -102,10 +102,15 @@ public class RecordingSession {
 		return Utils.isInside(location, minLocation, maxLocation);
 	}
 
+	public Location getRelativeLocation(Location location) {
+		return location.subtract(minLocation);
+	}
+
 	public void addAction(ActionData action) {
 		if (action.getTick() == -1) {
 			action.setTick(tick);
 		}
+		action.applyOffset(this);
 		actions.add(action);
 		System.out.println(action);
 	}

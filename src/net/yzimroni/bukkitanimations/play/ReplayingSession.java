@@ -3,6 +3,9 @@ package net.yzimroni.bukkitanimations.play;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Location;
+import org.bukkit.util.Vector;
+
 import net.yzimroni.bukkitanimations.animation.Animation;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 
@@ -10,6 +13,7 @@ public class ReplayingSession {
 
 	private Animation animation;
 	private boolean loop;
+	private Location baseLocation;
 
 	private boolean running;
 	private int tick = 1;
@@ -18,9 +22,10 @@ public class ReplayingSession {
 	private List<ActionData> actions = new ArrayList<ActionData>();
 	int index = 0;
 
-	public ReplayingSession(Animation animation) {
+	public ReplayingSession(Animation animation, Location baseLocation) {
 		this.animation = animation;
 		this.actions = animation.getActions();
+		this.baseLocation = baseLocation;
 	}
 
 	public void start() {
@@ -59,6 +64,14 @@ public class ReplayingSession {
 		tick++;
 	}
 
+	public Location getAbsoluteLocation(Location relative) {
+		return relative.add(baseLocation);
+	}
+
+	public Location getAbsoluteLocation(Vector relative) {
+		return baseLocation.clone().add(relative);
+	}
+
 	public void stop() {
 		if (!isRunning()) {
 			return;
@@ -78,6 +91,14 @@ public class ReplayingSession {
 
 	public EntityTracker getEntityTracker() {
 		return entityTracker;
+	}
+
+	public Location getBaseLocation() {
+		return baseLocation;
+	}
+
+	public void setBaseLocation(Location baseLocation) {
+		this.baseLocation = baseLocation;
 	}
 
 }
