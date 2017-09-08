@@ -1,10 +1,13 @@
 package net.yzimroni.bukkitanimations.record;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -24,8 +27,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
 
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.animation.AnimationData;
@@ -258,9 +259,25 @@ public class RecordingSession {
 		running = false;
 		RecordingManager.get().onStop(this);
 
+		writeAnimation();
+	}
+
+	private void writeAnimation() {
 		try {
-			Files.write(new Gson().toJson(actions), AnimationManager.get().createAnimationFile(animation.getName()),
-					Charset.defaultCharset());
+			File file = AnimationManager.get().createAnimationFile(animation.getName());
+			ZipOutputStream zipFile = new ZipOutputStream(new FileOutputStream(file));
+
+			ZipEntry info = new ZipEntry("info.json");
+			zipFile.putNextEntry(info);
+			zipFile.write(Utils.GSON.toJson(animation).getBytes());
+			zipFile.closeEntry();
+
+			ZipEntry actionsData = new ZipEntry("actions.json");
+			zipFile.putNextEntry(actionsData);
+			zipFile.write(Utils.GSON.toJson(actions).getBytes());
+			zipFile.closeEntry();
+
+			zipFile.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.yzimroni.bukkitanimations.animation.Animation;
+import net.yzimroni.bukkitanimations.animation.AnimationData;
 import net.yzimroni.bukkitanimations.animation.AnimationManager;
 import net.yzimroni.bukkitanimations.play.ReplayingSession;
 import net.yzimroni.bukkitanimations.record.RecordingManager;
@@ -28,13 +29,13 @@ public class Commands implements CommandExecutor {
 			sender.sendMessage("/" + label + " play <name>");
 		} else if (args.length == 1) {
 			if (args[0].equalsIgnoreCase("list")) {
-				List<Animation> animations = AnimationManager.get().getAnimations();
+				List<AnimationData> animations = AnimationManager.get().getAnimationsData();
 				if (animations.isEmpty()) {
 					sender.sendMessage("There are no animations");
 				} else {
 					sender.sendMessage("There are " + animations.size() + " animations:");
-					AnimationManager.get().getAnimations().forEach(a -> {
-						sender.sendMessage(a.getData().getName());
+					animations.forEach(a -> {
+						sender.sendMessage(a.getName());
 					});
 				}
 			}

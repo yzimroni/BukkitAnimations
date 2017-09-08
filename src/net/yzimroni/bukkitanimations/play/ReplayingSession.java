@@ -1,11 +1,7 @@
 package net.yzimroni.bukkitanimations.play;
 
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import net.yzimroni.bukkitanimations.animation.Animation;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
@@ -24,16 +20,7 @@ public class ReplayingSession {
 
 	public ReplayingSession(Animation animation) {
 		this.animation = animation;
-		load();
-	}
-
-	public void load() {
-		try {
-			actions = new Gson().fromJson(new FileReader(animation.getFile()), new TypeToken<List<ActionData>>() {
-			}.getType());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		this.actions = animation.getActions();
 	}
 
 	public void start() {
