@@ -1,10 +1,13 @@
 package net.yzimroni.bukkitanimations;
 
+import java.io.File;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.ProtocolLibrary;
 
+import net.yzimroni.bukkitanimations.animation.AnimationManager;
 import net.yzimroni.bukkitanimations.play.PlayingManager;
 import net.yzimroni.bukkitanimations.record.RecordingManager;
 import net.yzimroni.bukkitanimations.utils.Utils;
@@ -18,6 +21,7 @@ public class BukkitAnimationsPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
+		AnimationManager.get().setAnimationsFolder(new File(getDataFolder(), "animations"));
 		recordingManager = new RecordingManager();
 		playingManager = new PlayingManager();
 		Bukkit.getPluginManager().registerEvents(recordingManager, this);

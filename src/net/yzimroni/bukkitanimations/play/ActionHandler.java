@@ -90,6 +90,9 @@ public class ActionHandler {
 				}
 			} else {
 				String name = (String) a.get("name");
+				if (name == null) {
+					name = "";
+				}
 				NPC npc = Utils.NPCREGISTRY.createNPC(type, name);
 
 				if (type == EntityType.PLAYER) {
@@ -101,6 +104,7 @@ public class ActionHandler {
 						npc.data().set(NPC.PLAYER_SKIN_USE_LATEST, false);
 					}
 				}
+				location.getChunk().load();
 				npc.spawn(location);
 				s.getEntityTracker().addNPC(npc);
 				entity = npc.getEntity();

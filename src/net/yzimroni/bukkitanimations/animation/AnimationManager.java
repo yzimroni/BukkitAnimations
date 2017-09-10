@@ -10,7 +10,6 @@ import java.util.zip.ZipFile;
 import com.google.common.base.Preconditions;
 import com.google.gson.reflect.TypeToken;
 
-import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
@@ -21,9 +20,8 @@ public class AnimationManager {
 
 	private File animationsFolder;
 
-	public AnimationManager() {
-		animationsFolder = new File(BukkitAnimationsPlugin.get().getDataFolder(), "animations");
-		animationsFolder.mkdirs();
+	private AnimationManager() {
+
 	}
 
 	public static AnimationManager get() {

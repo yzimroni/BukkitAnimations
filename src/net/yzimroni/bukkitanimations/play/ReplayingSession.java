@@ -52,6 +52,7 @@ public class ReplayingSession {
 			try {
 				ActionHandler.handle(this, action);
 			} catch (Exception e) {
+				System.out.println("Exception was thrown while handling action: " + action);
 				e.printStackTrace();
 			}
 		}
