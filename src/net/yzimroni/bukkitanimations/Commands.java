@@ -45,9 +45,11 @@ public class Commands implements CommandExecutor {
 			if (args.length == 1) {
 				if (args[0].equalsIgnoreCase("stop") || args[0].equalsIgnoreCase("end")) {
 					RecordingManager.get().getSessionsByUUID(p.getUniqueId()).forEach(s -> {
-						s.stop();
-						System.out.println("Stopped recording " + s.getAnimation().getName());
-						p.sendMessage("Stopped recording " + s.getAnimation().getName());
+						if (s instanceof RecordingSession) {
+							((RecordingSession) s).stop();
+							System.out.println("Stopped recording " + s.getAnimation().getName());
+							p.sendMessage("Stopped recording " + s.getAnimation().getName());
+						}
 					});
 				}
 			} else if (args.length == 2) {

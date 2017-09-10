@@ -14,12 +14,12 @@ public class RecordingManager implements Listener {
 
 	private static RecordingManager instance;
 
-	private List<RecordingSession> recordings = new ArrayList<RecordingSession>();
+	private List<Recorder> recordings = new ArrayList<Recorder>();
 
 	public RecordingManager() {
 		instance = this;
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(BukkitAnimationsPlugin.get(),
-				() -> recordings.forEach(RecordingSession::tick), 1, 1);
+				() -> recordings.forEach(Recorder::tick), 1, 1);
 	}
 
 	public static RecordingManager get() {
@@ -27,18 +27,19 @@ public class RecordingManager implements Listener {
 	}
 
 	public void disable() {
-		new ArrayList<RecordingSession>(recordings).forEach(RecordingSession::stop);
+		new ArrayList<Recorder>(recordings).stream().filter(RecordingSession.class::isInstance)
+				.map(RecordingSession.class::cast).forEach(RecordingSession::stop);
 	}
 
-	protected void onStart(RecordingSession session) {
+	protected void onStart(Recorder session) {
 		recordings.add(session);
 	}
 
-	protected void onStop(RecordingSession session) {
+	protected void onStop(Recorder session) {
 		recordings.remove(session);
 	}
 
-	public List<RecordingSession> getSessionsByUUID(UUID uuid) {
+	public List<Recorder> getSessionsByUUID(UUID uuid) {
 		return recordings.stream().filter(s -> uuid.equals(s.getAnimation().getPlayer())).collect(Collectors.toList());
 	}
 

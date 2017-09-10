@@ -1,13 +1,8 @@
 package net.yzimroni.bukkitanimations.record;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -35,12 +30,9 @@ import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
-public class RecordingSession {
+public class RecordingSession extends Recorder {
 
-	private AnimationData animation;
 	private boolean running;
-
-	private int tick = 1;
 
 	private Location minLocation;
 	private Location maxLocation;
@@ -50,10 +42,8 @@ public class RecordingSession {
 
 	private RecordingTracker tracker;
 
-	private List<ActionData> actions = new ArrayList<ActionData>();
-
 	public RecordingSession(String name, UUID uuid, Location min, Location max) {
-		this.animation = new AnimationData(name, uuid);
+		super(new AnimationData(name, uuid));
 		Preconditions.checkArgument(min.getWorld().equals(max.getWorld()), "World must be same");
 		this.minLocation = new Location(min.getWorld(), Math.min(min.getBlockX(), max.getBlockX()),
 				Math.min(min.getBlockY(), max.getBlockY()), Math.min(min.getBlockZ(), max.getBlockZ()));
@@ -81,7 +71,7 @@ public class RecordingSession {
 				Play.Server.WORLD_PARTICLES, Play.Server.ENTITY_METADATA) {
 			@Override
 			public void onPacketSending(PacketEvent e) {
-				if (e.getPlayer().getUniqueId().equals(animation.getPlayer())) {
+				if (e.getPlayer().getUniqueId().equals(getAnimation().getPlayer())) {
 					handlePacket(e.getPacket());
 				}
 			}
@@ -106,21 +96,19 @@ public class RecordingSession {
 		return location.subtract(minLocation);
 	}
 
+	@Override
 	public void addAction(ActionData action) {
-		if (action.getTick() == -1) {
-			action.setTick(tick);
-		}
 		action.applyOffset(this);
-		actions.add(action);
-		System.out.println(action);
+		super.addAction(action);
 	}
 
+	@Override
 	protected void tick() {
 		if (!isRunning()) {
 			return;
 		}
 		checkEntityMove();
-		tick++;
+		super.tick();
 	}
 
 	private void checkEntityMove() {
@@ -264,36 +252,11 @@ public class RecordingSession {
 		running = false;
 		RecordingManager.get().onStop(this);
 
-		writeAnimation();
-	}
-
-	private void writeAnimation() {
-		try {
-			File file = AnimationManager.get().createAnimationFile(animation.getName());
-			ZipOutputStream zipFile = new ZipOutputStream(new FileOutputStream(file));
-
-			ZipEntry info = new ZipEntry("info.json");
-			zipFile.putNextEntry(info);
-			zipFile.write(Utils.GSON.toJson(animation).getBytes());
-			zipFile.closeEntry();
-
-			ZipEntry actionsData = new ZipEntry("actions.json");
-			zipFile.putNextEntry(actionsData);
-			zipFile.write(Utils.GSON.toJson(actions).getBytes());
-			zipFile.closeEntry();
-
-			zipFile.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		writeAnimation(AnimationManager.get().createAnimationFile(getAnimation().getName()));
 	}
 
 	public boolean isRunning() {
 		return running;
-	}
-
-	public AnimationData getAnimation() {
-		return animation;
 	}
 
 	public RecordingTracker getTracker() {
