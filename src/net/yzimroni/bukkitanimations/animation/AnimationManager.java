@@ -1,10 +1,13 @@
 package net.yzimroni.bukkitanimations.animation;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import com.google.common.base.Preconditions;
@@ -30,12 +33,12 @@ public class AnimationManager {
 
 	public List<Animation> getAnimations() {
 		return Arrays.stream(animationsFolder.listFiles(f -> f.getName().endsWith(FILE_EXTENSION))).map(this::readFile)
-				.collect(Collectors.toList());
+				.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	public List<AnimationData> getAnimationsData() {
 		return Arrays.stream(animationsFolder.listFiles(f -> f.getName().endsWith(FILE_EXTENSION)))
-				.map(this::readAnimationData).collect(Collectors.toList());
+				.map(this::readAnimationData).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	public boolean hasAnimation(String name) {
@@ -66,7 +69,11 @@ public class AnimationManager {
 			Preconditions.checkArgument(zip.getEntry("actions.json") != null,
 					"Animation file doesn't contains actions.json file!");
 			return zip;
-		} catch (Exception e) {
+		} catch (ZipException e) {
+			System.out.println("Invalid animation zip file: " + f.getAbsolutePath());
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("IOException was thrown while reading animation file: " + f.getAbsolutePath());
 			e.printStackTrace();
 		}
 		return null;
@@ -75,6 +82,9 @@ public class AnimationManager {
 	private AnimationData readAnimationData(File f) {
 		try {
 			ZipFile zip = getAnimationZip(f);
+			if (zip == null) {
+				return null;
+			}
 			AnimationData data = Utils.GSON.fromJson(
 					new InputStreamReader(zip.getInputStream(zip.getEntry("info.json"))), AnimationData.class);
 			zip.close();
