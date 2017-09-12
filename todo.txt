@@ -1,16 +1,12 @@
 Block Action (pistion, chest/enderchest open/close, shulker box opening)
-Multi block change
 Armor updates and item in hand updates when changed from the inventory
-Sounds
 Map (map item)
 Entity velocity (is it needed?)
 Entity passengers
 Leash
 Vehicles (minecart, boats)
 
-
 Fix armor stand destroying
-
 
 Per version class / Multi version support
 Save blocks in replays

@@ -68,7 +68,7 @@ public class RecordingSession extends Recorder {
 	protected void initPacketListener() {
 		packetListener = new PacketAdapter(BukkitAnimationsPlugin.get(), ListenerPriority.LOWEST,
 				Play.Server.WORLD_EVENT, Play.Server.BLOCK_BREAK_ANIMATION, Play.Server.COLLECT,
-				Play.Server.WORLD_PARTICLES, Play.Server.ENTITY_METADATA) {
+				Play.Server.WORLD_PARTICLES, Play.Server.ENTITY_METADATA, Play.Server.NAMED_SOUND_EFFECT) {
 			@Override
 			public void onPacketSending(PacketEvent e) {
 				if (e.getPlayer().getUniqueId().equals(getAnimation().getPlayer())) {
@@ -234,6 +234,14 @@ public class RecordingSession extends Recorder {
 					}
 				}
 			}
+		} else if (p.getType() == Play.Server.NAMED_SOUND_EFFECT) {
+			String sound = p.getStrings().read(0);
+			Location location = new Location(minLocation.getWorld(), (double) p.getIntegers().read(0) / 8,
+					(double) p.getIntegers().read(1) / 8, (double) p.getIntegers().read(2) / 8);
+			float volume = p.getFloat().read(0);
+			int pitch = p.getIntegers().read(3);
+			addAction(new ActionData(ActionType.SOUND).data("location", location).data("sound", sound)
+					.data("volume", volume).data("pitch", pitch));
 		}
 
 	}

@@ -17,9 +17,11 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerAnimationType;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
@@ -187,6 +189,15 @@ public class ActionHandler {
 			MinecraftDataManagers.getEntities().load(a, update);
 		});
 
+		register(ActionType.REMOVE_EFFECT, (s, a) -> {
+			int entityId = a.getEntityId();
+			Entity entity = s.getEntityTracker().getEntityForOldId(entityId);
+			if (entity instanceof LivingEntity) {
+				PotionEffectType effect = PotionEffectType.getByName((String) a.get("effect"));
+				((LivingEntity) entity).removePotionEffect(effect);
+			}
+		});
+
 		register(ActionType.ENTITY_DEATH, (s, a) -> {
 			int entityId = a.getEntityId();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
@@ -201,10 +212,11 @@ public class ActionHandler {
 				return;
 			}
 			NPC npc = s.getEntityTracker().getNPC(e.getEntityId());
-			e.remove();
 			if (npc != null) {
 				s.getEntityTracker().removeNPC(e.getEntityId());
 				npc.despawn();
+			} else {
+				e.remove();
 			}
 			s.getEntityTracker().removeEntity(e.getEntityId());
 			s.getEntityTracker().removeOldToNewId(entityId);
@@ -267,6 +279,17 @@ public class ActionHandler {
 
 			blocks.forEach(b -> {
 				b.setType(Material.AIR);
+			});
+		});
+
+		register(ActionType.SOUND, (s, a) -> {
+			Location location = a.getLocation(s);
+			String sound = (String) a.get("sound");
+			float volume = ((Number) a.get("volume")).floatValue();
+			float pitch = ((Number) a.get("pitch")).floatValue();
+			// World#playSound doesn't support custom sound names in 1.8.8
+			location.getWorld().getPlayers().forEach(p -> {
+				p.playSound(location, sound, volume, pitch);
 			});
 		});
 	}
