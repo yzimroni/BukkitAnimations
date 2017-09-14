@@ -3,10 +3,16 @@ package net.yzimroni.bukkitanimations.record;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.google.common.base.Preconditions;
 
 import net.yzimroni.bukkitanimations.animation.AnimationData;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
@@ -18,6 +24,7 @@ public class Recorder {
 	private int tick = 1;
 
 	private List<ActionData> actions = new ArrayList<ActionData>();
+	private Map<String, Object> extraFiles = new HashMap<String, Object>();
 
 	public Recorder(AnimationData animation) {
 		super();
@@ -36,6 +43,14 @@ public class Recorder {
 		System.out.println(action);
 	}
 
+	public void addExtraFile(String path, Object data) {
+		Preconditions.checkNotNull(path, "path");
+		Preconditions.checkNotNull(data, "data");
+		Preconditions.checkArgument(data instanceof byte[] || data instanceof File,
+				"Extra file data is in unknown type: " + data.getClass());
+		extraFiles.put(path, data);
+	}
+
 	public void writeAnimation(File file) {
 		try {
 			ZipOutputStream zipFile = new ZipOutputStream(new FileOutputStream(file));
@@ -49,6 +64,25 @@ public class Recorder {
 			zipFile.putNextEntry(actionsData);
 			zipFile.write(Utils.GSON.toJson(actions).getBytes());
 			zipFile.closeEntry();
+
+			// Add extra files to the zip
+			for (Entry<String, Object> extra : extraFiles.entrySet()) {
+				byte[] data = null;
+				if (extra.getValue() instanceof byte[]) {
+					data = (byte[]) extra.getValue();
+				} else if (extra.getValue() instanceof File) {
+					data = Files.readAllBytes(((File) extra.getValue()).toPath());
+				} else {
+					zipFile.close();
+					throw new IllegalArgumentException("Unknown extra file data type: "
+							+ (extra.getValue() == null ? "null" : extra.getValue().getClass()));
+				}
+
+				ZipEntry extraEntry = new ZipEntry(extra.getKey());
+				zipFile.putNextEntry(extraEntry);
+				zipFile.write(data);
+				zipFile.closeEntry();
+			}
 
 			zipFile.close();
 		} catch (IOException e) {
