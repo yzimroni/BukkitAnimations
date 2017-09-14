@@ -1,5 +1,6 @@
 package net.yzimroni.bukkitanimations.record;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,11 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.google.common.base.Preconditions;
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.schematic.SchematicFormat;
 
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
 import net.yzimroni.bukkitanimations.animation.AnimationData;
@@ -30,6 +36,7 @@ import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
+@SuppressWarnings("deprecation")
 public class RecordingSession extends Recorder {
 
 	private boolean running;
@@ -80,6 +87,7 @@ public class RecordingSession extends Recorder {
 	}
 
 	private void onStart() {
+		saveSchematic();
 		minLocation.getWorld().getEntities().stream().filter(e -> isInside(e.getLocation())).forEach(e -> {
 			ActionData action = new ActionData(
 					e instanceof Projectile ? ActionType.SHOOT_PROJECTILE : ActionType.SPAWN_ENTITY).entityData(e);
@@ -88,8 +96,31 @@ public class RecordingSession extends Recorder {
 		});
 	}
 
+	private void saveSchematic() {
+		CuboidClipboard clipboard = new CuboidClipboard(BukkitUtil.toVector(getSize()),
+				BukkitUtil.toVector(minLocation));
+		clipboard.copy(new EditSession(new BukkitWorld(minLocation.getWorld()), Integer.MAX_VALUE));
+
+		File tempFolder = new File(BukkitAnimationsPlugin.get().getDataFolder(), "temp");
+		tempFolder.mkdirs();
+		try {
+			File schematicFile = File.createTempFile("animation", ".schematic", tempFolder);
+			schematicFile.deleteOnExit();
+			SchematicFormat.MCEDIT.save(clipboard, schematicFile);
+			addExtraFile("schematics/animation.schematic", schematicFile);
+			addAction(new ActionData(ActionType.LOAD_SCHEMATIC).data("location", minLocation).data("schematic",
+					"animation"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public boolean isInside(Location location) {
 		return Utils.isInside(location, minLocation, maxLocation);
+	}
+
+	public Vector getSize() {
+		return maxLocation.clone().subtract(minLocation).toVector();
 	}
 
 	public Location getRelativeLocation(Location location) {
@@ -167,7 +198,6 @@ public class RecordingSession extends Recorder {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	private void handlePacket(PacketContainer p) {
 		if (p.getType() == Play.Server.WORLD_EVENT) {
 			int effectId = p.getIntegers().read(0);

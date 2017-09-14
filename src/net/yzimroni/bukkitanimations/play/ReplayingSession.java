@@ -102,4 +102,8 @@ public class ReplayingSession {
 		this.baseLocation = baseLocation;
 	}
 
+	public Animation getAnimation() {
+		return animation;
+	}
+
 }

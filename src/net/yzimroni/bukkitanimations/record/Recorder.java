@@ -24,6 +24,8 @@ public class Recorder {
 	private int tick = 1;
 
 	private List<ActionData> actions = new ArrayList<ActionData>();
+
+	// Extra files to add to the animation zip file (used to save schematics)
 	private Map<String, Object> extraFiles = new HashMap<String, Object>();
 
 	public Recorder(AnimationData animation) {

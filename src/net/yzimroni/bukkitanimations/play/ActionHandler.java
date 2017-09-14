@@ -1,5 +1,6 @@
 package net.yzimroni.bukkitanimations.play;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -29,18 +32,27 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers.Particle;
+import com.google.common.base.Preconditions;
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.schematic.MCEditSchematicFormat;
+import com.sk89q.worldedit.schematic.SchematicFormat;
 
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.npc.skin.Skin;
 import net.citizensnpcs.util.NMS;
 import net.citizensnpcs.util.PlayerAnimation;
 import net.yzimroni.bukkitanimations.BukkitAnimationsPlugin;
+import net.yzimroni.bukkitanimations.animation.AnimationManager;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 import net.yzimroni.bukkitanimations.data.action.ActionType;
 import net.yzimroni.bukkitanimations.data.manager.MinecraftDataManagers;
 import net.yzimroni.bukkitanimations.utils.NMSUtils;
 import net.yzimroni.bukkitanimations.utils.Utils;
 
+@SuppressWarnings("deprecation")
 public class ActionHandler {
 
 	private static final HashMap<ActionType, BiConsumer<ReplayingSession, ActionData>> HANDLERS = new HashMap<>();
@@ -291,6 +303,24 @@ public class ActionHandler {
 			location.getWorld().getPlayers().forEach(p -> {
 				p.playSound(location, sound, volume, pitch);
 			});
+		});
+
+		register(ActionType.LOAD_SCHEMATIC, (s, a) -> {
+			Location location = a.getLocation(s);
+			String schematicName = (String) a.get("schematic");
+			ZipFile animationZip = AnimationManager.get().getAnimationZip(s.getAnimation().getFile());
+			ZipEntry entry = animationZip.getEntry("schematics/" + schematicName + ".schematic");
+			Preconditions.checkNotNull(entry, "Schematic " + schematicName + " doesn't exists!");
+			try {
+				InputStream stream = animationZip.getInputStream(entry);
+				CuboidClipboard schematic = ((MCEditSchematicFormat) SchematicFormat.MCEDIT).load(stream);
+				schematic.paste(new EditSession(new BukkitWorld(location.getWorld()), Integer.MAX_VALUE),
+						BukkitUtil.toVector(location), false);
+				stream.close();
+				animationZip.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		});
 	}
 
