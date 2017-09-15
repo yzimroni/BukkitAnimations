@@ -481,8 +481,12 @@ public class MinecraftDataManagers {
 
 			@Override
 			public void load(ActionData action, Minecart object) {
-				object.setDisplayBlock(action.getItemStack("displayBlock").getData());
-				object.setDisplayBlockOffset(action.getInt("displayBlockOffset"));
+				if (action.has("displayBlock")) {
+					object.setDisplayBlock(action.getItemStack("displayBlock").getData());
+				}
+				if (action.has("displayBlockOffset")) {
+					object.setDisplayBlockOffset(action.getInt("displayBlockOffset"));
+				}
 			}
 		});
 
