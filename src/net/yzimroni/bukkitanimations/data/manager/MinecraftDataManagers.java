@@ -119,6 +119,9 @@ public class MinecraftDataManagers {
 				if (action.has("customNameVisble")) {
 					e.setCustomNameVisible((boolean) action.get("customNameVisble"));
 				}
+				if (action.has("customName")) {
+					e.setCustomName((String) action.get("customName"));
+				}
 				if (action.has("fireTicks")) {
 					e.setFireTicks(action.getInt("fireTicks"));
 				}
@@ -383,10 +386,11 @@ public class MinecraftDataManagers {
 			public void save(ActionData action, ArmorStand stand) {
 				action.data("headPose", stand.getHeadPose()).data("bodyPose", stand.getBodyPose())
 						.data("leftArmPose", stand.getLeftArmPose()).data("rightArmPose", stand.getRightArmPose())
-						.data("leftLegPose", stand.getLeftLegPose()).data("rightLeftPose", stand.getRightLegPose());
+						.data("leftLegPose", stand.getLeftLegPose()).data("rightLegPose", stand.getRightLegPose());
 
 				action.data("basePlate", stand.hasBasePlate()).data("visible", stand.isVisible())
-						.data("arms", stand.hasArms()).data("small", stand.isSmall()).data("marker", stand.isMarker());
+						.data("arms", stand.hasArms()).data("small", stand.isSmall()).data("marker", stand.isMarker())
+						.data("gravity", stand.hasGravity());
 
 				// Item in hand and armor are saved in the LivingEntity data handler
 			}
@@ -395,17 +399,50 @@ public class MinecraftDataManagers {
 			public void load(ActionData action, ArmorStand stand) {
 				if (action.has("headPose")) {
 					stand.setHeadPose(getEulerAngle(action, "headPose"));
-					stand.setBodyPose(getEulerAngle(action, "bodyPose"));
-					stand.setLeftArmPose(getEulerAngle(action, "leftArmPose"));
-					stand.setRightArmPose(getEulerAngle(action, "rightArmPose"));
-					stand.setLeftLegPose(getEulerAngle(action, "leftLegPose"));
-					stand.setRightLegPose(getEulerAngle(action, "rightLeftPose"));
+				}
 
+				if (action.has("bodyPose")) {
+					stand.setBodyPose(getEulerAngle(action, "bodyPose"));
+				}
+
+				if (action.has("leftArmPose")) {
+					stand.setLeftArmPose(getEulerAngle(action, "leftArmPose"));
+				}
+
+				if (action.has("rightArmPose")) {
+					stand.setRightArmPose(getEulerAngle(action, "rightArmPose"));
+				}
+
+				if (action.has("leftLegPose")) {
+					stand.setLeftLegPose(getEulerAngle(action, "leftLegPose"));
+				}
+
+				if (action.has("rightLegPose")) {
+					stand.setRightLegPose(getEulerAngle(action, "rightLegPose"));
+				}
+
+				if (action.has("basePlate")) {
 					stand.setBasePlate((boolean) action.get("basePlate"));
+				}
+
+				if (action.has("visible")) {
 					stand.setVisible((boolean) action.get("visible"));
+				}
+
+				if (action.has("arms")) {
 					stand.setArms((boolean) action.get("arms"));
+				}
+
+				if (action.has("small")) {
 					stand.setSmall((boolean) action.get("small"));
+				}
+
+				if (action.has("marker")) {
 					stand.setMarker((boolean) action.get("marker"));
+				}
+
+				if (action.has("gravity")) {
+					stand.setGravity((boolean) action.get("gravity"));
 				}
 			}
 

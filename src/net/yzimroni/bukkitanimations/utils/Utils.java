@@ -15,8 +15,8 @@ import net.citizensnpcs.api.npc.NPCRegistry;
 public class Utils {
 
 	public static final NPCRegistry NPCREGISTRY = CitizensAPI.createAnonymousNPCRegistry(new EmptyNPCDataStore());
-	public static final List<EntityType> SPECIAL_ENTITIES = Collections
-			.unmodifiableList(Arrays.asList(EntityType.EXPERIENCE_ORB, EntityType.PAINTING, EntityType.ITEM_FRAME));
+	public static final List<EntityType> SPECIAL_ENTITIES = Collections.unmodifiableList(Arrays
+			.asList(EntityType.EXPERIENCE_ORB, EntityType.PAINTING, EntityType.ITEM_FRAME, EntityType.ARMOR_STAND));
 	public static final Gson GSON = new Gson();
 
 	private Utils() {
