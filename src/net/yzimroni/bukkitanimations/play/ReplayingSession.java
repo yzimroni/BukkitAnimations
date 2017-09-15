@@ -6,6 +6,8 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
+import com.google.common.base.Preconditions;
+
 import net.yzimroni.bukkitanimations.animation.Animation;
 import net.yzimroni.bukkitanimations.data.action.ActionData;
 
@@ -14,6 +16,7 @@ public class ReplayingSession {
 	private Animation animation;
 	private boolean loop;
 	private Location baseLocation;
+	private int speed = 1;
 
 	private boolean running;
 	private int tick = 1;
@@ -40,7 +43,12 @@ public class ReplayingSession {
 		if (!isRunning()) {
 			return;
 		}
-		playTick();
+		for (int i = 0; i < speed; i++) {
+			playTick();
+			if (!isRunning()) {
+				return;
+			}
+		}
 	}
 
 	private void playTick() {
@@ -104,6 +112,15 @@ public class ReplayingSession {
 
 	public Animation getAnimation() {
 		return animation;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(int speed) {
+		Preconditions.checkArgument(speed > 0, "Speed must be positive");
+		this.speed = speed;
 	}
 
 }
