@@ -36,6 +36,7 @@ public class BukkitAnimationsPlugin extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		recordingManager.disable();
+		playingManager.disable();
 		ProtocolLibrary.getProtocolManager().removePacketListeners(this);
 		Utils.NPCREGISTRY.deregisterAll();
 	}

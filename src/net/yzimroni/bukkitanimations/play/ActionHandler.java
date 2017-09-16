@@ -173,9 +173,11 @@ public class ActionHandler {
 		register(ActionType.PLAYER_ANIMATION, (s, a) -> {
 			int entityId = a.getEntityId();
 			Entity e = s.getEntityTracker().getEntityForOldId(entityId);
-			PlayerAnimationType type = PlayerAnimationType.valueOf((String) a.get("type"));
-			if (type == PlayerAnimationType.ARM_SWING) {
-				PlayerAnimation.ARM_SWING.play((Player) e);
+			if (e != null) {
+				PlayerAnimationType type = PlayerAnimationType.valueOf((String) a.get("type"));
+				if (type == PlayerAnimationType.ARM_SWING) {
+					PlayerAnimation.ARM_SWING.play((Player) e);
+				}
 			}
 		});
 		register(ActionType.ENTITY_PICKUP, (s, a) -> {

@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPCRegistry;
@@ -17,7 +18,7 @@ public class Utils {
 	public static final NPCRegistry NPCREGISTRY = CitizensAPI.createAnonymousNPCRegistry(new EmptyNPCDataStore());
 	public static final List<EntityType> SPECIAL_ENTITIES = Collections.unmodifiableList(Arrays
 			.asList(EntityType.EXPERIENCE_ORB, EntityType.PAINTING, EntityType.ITEM_FRAME, EntityType.ARMOR_STAND));
-	public static final Gson GSON = new Gson();
+	public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
 	private Utils() {
 
