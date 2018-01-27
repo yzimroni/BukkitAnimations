@@ -16,6 +16,10 @@ import net.citizensnpcs.util.NMS;
 
 public class NMSUtils {
 
+	private NMSUtils() {
+
+	}
+
 	public static Class<?> getNMSClass(String classname) {
 		String nmsVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		String className = "net.minecraft.server." + nmsVersion + "." + classname;
@@ -85,10 +89,9 @@ public class NMSUtils {
 	}
 
 	public static void sendPacket(Object packet, Location location, double radius) {
-		double r = radius * radius;
-		;
+		double distance = radius * radius;
 		try {
-			location.getWorld().getPlayers().stream().filter(p -> location.distanceSquared(p.getLocation()) < r)
+			location.getWorld().getPlayers().stream().filter(p -> location.distanceSquared(p.getLocation()) < distance)
 					.forEach(p -> sendPacket(p, packet));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -127,6 +130,5 @@ public class NMSUtils {
 			e.printStackTrace();
 		}
 	}
-
 
 }

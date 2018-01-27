@@ -277,8 +277,8 @@ public class ActionHandler {
 			}).collect(Collectors.toList());
 
 			// World#createExplosion allows to modify affected blocks only via events and it
-			// drops items from blocks, so i think its better to send the explosion packet
-			// directly
+			// drops items from affected blocks, so i think its better to send the explosion
+			// packet directly
 
 			PacketContainer explosion = new PacketContainer(PacketType.Play.Server.EXPLOSION);
 			explosion.getDoubles().write(0, location.getX()).write(1, location.getY()).write(2, location.getZ());

@@ -47,7 +47,6 @@ public class Commands implements CommandExecutor {
 					RecordingManager.get().getSessionsByUUID(p.getUniqueId()).forEach(s -> {
 						if (s instanceof RecordingSession) {
 							((RecordingSession) s).stop();
-							System.out.println("Stopped recording " + s.getAnimation().getName());
 							p.sendMessage("Stopped recording " + s.getAnimation().getName());
 						}
 					});
@@ -62,7 +61,6 @@ public class Commands implements CommandExecutor {
 					RecordingSession session = new RecordingSession(name, p.getUniqueId(),
 							new Location(p.getWorld(), 151, 65, 208), new Location(p.getWorld(), 175, 82, 236));
 					session.start();
-					System.out.println("Start recording " + name);
 					p.sendMessage("Start recording " + name);
 				} else if (args[0].equalsIgnoreCase("play")) {
 					String name = args[1];
@@ -72,7 +70,6 @@ public class Commands implements CommandExecutor {
 					}
 					Animation animation = AnimationManager.get().getAnimation(name);
 					p.sendMessage("Playing " + animation.getData().getName());
-					System.out.println("Playing " + animation.getData().getName());
 					ReplayingSession play = new ReplayingSession(animation, new Location(p.getWorld(), 113, 93, 208));
 					play.start();
 				}

@@ -27,6 +27,7 @@ public class RecordingManager implements Listener {
 	}
 
 	public void disable() {
+		// Using a new list to prevent ConcurrentModificationException
 		new ArrayList<Recorder>(recordings).stream().filter(RecordingSession.class::isInstance)
 				.map(RecordingSession.class::cast).forEach(RecordingSession::stop);
 	}

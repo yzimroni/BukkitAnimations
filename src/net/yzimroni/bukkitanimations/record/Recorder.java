@@ -42,7 +42,6 @@ public class Recorder {
 			action.setTick(tick);
 		}
 		actions.add(action);
-		System.out.println(action);
 	}
 
 	public void addExtraFile(String path, Object data) {

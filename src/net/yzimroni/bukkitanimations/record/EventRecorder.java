@@ -110,7 +110,7 @@ public class EventRecorder implements Listener {
 		e.getBlocks().forEach(b -> {
 			if (session.isInside(b.getLocation())) {
 				session.addAction(new ActionData(ActionType.BLOCK_PLACE).blockData(b.getBlock()).blockStateType(b));
-				// TODO Use Multi Block Change insted of block place action for every block?
+				// TODO Use Multi Block Change instead of block place action for every block?
 			}
 		});
 	}
@@ -159,7 +159,6 @@ public class EventRecorder implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockSpread(BlockSpreadEvent e) {
 		if (session.isInside(e.getBlock().getLocation())) {
-			System.out.println(e.getNewState());
 			session.addAction(
 					new ActionData(ActionType.BLOCK_PLACE).blockData(e.getBlock()).blockStateType(e.getNewState()));
 		}

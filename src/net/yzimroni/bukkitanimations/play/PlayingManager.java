@@ -33,6 +33,7 @@ public class PlayingManager implements Listener {
 	}
 
 	public void disable() {
+		// Using a new list to prevent ConcurrentModificationException
 		new ArrayList<ReplayingSession>(replaying).forEach(ReplayingSession::stop);
 	}
 

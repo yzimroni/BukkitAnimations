@@ -56,7 +56,6 @@ public class RecordingSession extends Recorder {
 				Math.min(min.getBlockY(), max.getBlockY()), Math.min(min.getBlockZ(), max.getBlockZ()));
 		this.maxLocation = new Location(min.getWorld(), Math.max(min.getBlockX(), max.getBlockX()),
 				Math.max(min.getBlockY(), max.getBlockY()), Math.max(min.getBlockZ(), max.getBlockZ()));
-
 	}
 
 	public void start() {
@@ -147,8 +146,6 @@ public class RecordingSession extends Recorder {
 		getTracker().getTrackedEntities().entrySet().stream().filter(e -> e.getKey().isValid())
 				.filter(e -> e.getKey().getType() != EntityType.PLAYER).forEach(e -> {
 					Location location = e.getKey().getLocation();
-					// System.out.println(location.getYaw() + " " + location.getPitch());
-					// handleEntityMove(e.getKey(), e.getValue(), e.getKey().getLocation());
 					if (!location.equals(e.getValue())) {
 						if (isInside(location)) {
 							ActionData action = new ActionData(ActionType.ENTITY_MOVE)

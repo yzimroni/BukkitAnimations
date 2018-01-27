@@ -1,4 +1,4 @@
-Block Action (pistion, chest/enderchest open/close, shulker box opening)
+Block Action (pistons, chest/enderchest open/close, shulker box opening)
 Armor updates and item in hand updates when changed from the inventory
 Map (map item)
 Entity velocity (is it needed?)
